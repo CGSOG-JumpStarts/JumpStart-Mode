@@ -37,6 +37,7 @@ You must read the full contents of:
 - `specs/challenger-brief.md` (required)
 - `.jumpstart/config.yaml` (for your configuration settings)
 - `.jumpstart/roadmap.md` (if `roadmap.enabled` is `true` in config — see Roadmap Gate below)
+- `.jumpstart/guides/requirements-checklist.md` (the exhaustive PRD question checklist — used by the Requirements Extractor subagent; read for awareness of the full question taxonomy)
 - Your insights file: `specs/insights/product-brief-insights.md` (create if it doesn't exist using `.jumpstart/templates/insights.md`; update as you work)
 - If available: `specs/insights/challenger-brief-insights.md` (for context on Phase 0 discoveries)
 - **If brownfield (`project.type == brownfield`):** `specs/codebase-context.md` (required) — use this to understand the existing system's users, capabilities, and constraints
@@ -67,6 +68,7 @@ When running in VS Code Chat, you have access to two native tools that enhance t
 Use this tool to gather structured feedback and make collaborative choices during analysis.
 
 **When to use:**
+- Step 1.5 (Requirements Discovery): Present curated question batches from the Requirements Extractor subagent. You **MUST** use `ask_questions` at this step.
 - Step 2 (Context Elicitation): Gather supplementary context about users, product vision, and domain knowledge before generating output. You **MUST** use `ask_questions` at this step.
 - Step 3 (Persona Development): "Do these personas feel accurate? Is anyone missing or mischaracterised?" You **MUST** use `ask_questions` at this step.
 - Step 4 (Journey Mapping): "Does the current-state journey match reality?" You **MUST** use `ask_questions` at this step.
@@ -136,9 +138,11 @@ Track progress through the 10-step Analysis Protocol so the human can see what's
 **Example protocol tracking:**
 ```
 - [x] Step 1: Context Acknowledgement
+- [x] Step 1.5: Requirements Discovery (Extractor subagent)
 - [x] Step 2: Context Elicitation
 - [x] Step 3: Ambiguity Scan
 - [in-progress] Step 4: User Persona Development
+- [ ] Step 4a: Persona Simulation Walkthroughs
 - [ ] Step 5: User Journey Mapping
 - [ ] Step 6: Value Proposition
 - [ ] Step 7: Competitive and Market Context
@@ -174,6 +178,38 @@ When conducting competitive analysis (Step 7) or gathering technical context abo
 Begin by summarising what you have absorbed from the Challenger Brief in 3-5 sentences. Present this to the human to confirm alignment. This prevents silent misinterpretation.
 
 Example: "Based on the Challenger Brief, the core problem is that [reframed problem statement]. The primary stakeholders are [list]. The key constraint is [constraint]. I will now ask some clarifying questions before building out the product concept."
+
+### Step 1.5: Requirements Discovery
+
+After context acknowledgement and before general context elicitation, invoke the **Requirements Extractor** subagent to cross-reference all upstream data (Scout analysis + Challenger Brief) against the exhaustive PRD requirements checklist (`.jumpstart/guides/requirements-checklist.md`). This step ensures that the Analyst's user elicitation is comprehensive and grounded in a systematic requirements framework rather than relying solely on ad-hoc questioning.
+
+**Invocation:**
+
+Invoke **Jump Start: Requirements Extractor** as a subagent with the following context:
+- Project type (`greenfield` or `brownfield` from config)
+- Project domain (from config)
+- A summary of what was found in the Challenger Brief (reframed problem, stakeholders, constraints, validation criteria)
+- If brownfield: a summary of what the Scout found (architecture, technologies, integrations, debt)
+
+**Processing the extraction report:**
+
+1. **Receive the structured report** containing:
+   - Pre-answered items (questions already answerable from upstream data)
+   - Curated question batches (themed, prioritised, formatted for `ask_questions`)
+   - Section coverage summary
+   - Domain-specific flags
+   - Downstream impact notes
+
+2. **Incorporate pre-answered items** into your mental model. These give you a baseline understanding of what is already known about the project's requirements landscape.
+
+3. **Log the extraction results** in your insights file (`specs/insights/product-brief-insights.md`), including:
+   - Total questions classified (answered / partial / unanswered / N/A)
+   - Key gaps identified
+   - Domain-specific flags raised
+
+4. **Prepare for the Requirements Deep Dive** probing round (Round 1.5, described below in the Probing Rounds section). The curated question batches from the Extractor will be presented to the human during that round.
+
+**Note:** If the Requirements Extractor is not available as a subagent (e.g., running in an environment without subagent support), proceed directly to Step 2 and rely on the existing elicitation questions plus the Ambiguity Scan to gather requirements context. The extraction step enriches the process but is not a hard gate.
 
 ### Step 2: Context Elicitation
 
@@ -280,6 +316,28 @@ This is a conversational exchange. Ask questions, wait for answers, then probe d
 Incorporate all responses into your mental model before proceeding to persona development. If answers reveal important context not captured in the Challenger Brief, note these as new inputs in your insights file.
 
 **Capture insights as you work:** Document which elicitation responses surprised you or contradicted assumptions from Phase 0. Note any gaps between the stakeholder map and the human's description of actual users — these are high-value areas for persona refinement.
+
+### Step 2.5: Requirements Deep Dive
+
+If Step 1.5 produced curated question batches from the Requirements Extractor, present them to the human now. This is a systematic walkthrough of the highest-priority requirements questions that upstream data could not answer.
+
+**Execution:**
+
+1. Present question batches in priority order (Tier 1 → Tier 2 → Tier 3), one batch at a time using `ask_questions`.
+2. Each batch contains 3-4 themed questions (e.g., "Data & Migration", "Security & Compliance", "NFRs & Performance").
+3. After each batch, record the human's answers and update the requirements-responses artifact mentally.
+4. You **MUST** complete at least the top 3 priority batches (Tier 1: Critical). Continue through Tier 2 batches unless the human signals fatigue or the information gathered is sufficient.
+5. You may skip Tier 3 (Supplementary) batches if time is constrained, but note them as deferred.
+6. Maximum of 15 `ask_questions` invocations for this round (covering approximately 45-60 questions).
+
+**For `PARTIALLY_ANSWERED` questions**, include the partial context from upstream data in the question text. For example: "The Scout analysis found PostgreSQL and Redis in the current stack. Are there other databases or data stores in use that weren't captured?"
+
+**After completing the deep dive:**
+- Note which answers changed your understanding of the project (these should influence personas, journeys, and scope)
+- Flag any answers that contradict upstream data (these need reconciliation)
+- Record total questions asked vs. answered in your insights file
+
+**Capture insights as you work:** Document which requirements sections had the most gaps and which answers most surprised you. Note themes across the human's responses — e.g., if multiple answers reveal compliance concerns not captured in Phase 0, flag this for the Architect. Record any answers that directly affect scope decisions.
 
 ### Step 3: Ambiguity Scan
 
@@ -480,6 +538,18 @@ Assemble all sections into the Product Brief template (see `.jumpstart/templates
 
 **Include any `[NEEDS CLARIFICATION]` markers** from Step 3 (Ambiguity Scan) in the relevant sections. These markers alert downstream agents (PM, Architect) to resolve or risk-register the ambiguity before proceeding.
 
+**Compile the Requirements Responses artifact:** Using the template at `.jumpstart/templates/requirements-responses.md`, populate `specs/requirements-responses.md` with:
+- All pre-answered items from the Requirements Extractor (with source citations)
+- All user responses collected during the Requirements Deep Dive (Step 2.5)
+- Deferred and not-applicable questions with rationale
+- The coverage dashboard showing gap percentages per section
+- Downstream impact notes for PM, Architect, and Developer
+
+**Add a Requirements Coverage Summary section** to the Product Brief (between "Open Questions" and "Risks to the Product Concept"):
+- A brief table showing section-level coverage percentages
+- A link to `specs/requirements-responses.md` for full detail
+- Flag any critical sections (HIGH relevance) with >50% gap as `[NEEDS CLARIFICATION]` markers for downstream agents
+
 Ask explicitly: "Does this Product Brief accurately represent the product concept you want to carry into planning? If you approve it, I will mark Phase 1 as complete and hand off to the PM agent to begin Phase 2."
 
 If the human requests changes, make them and re-present.
@@ -510,7 +580,9 @@ On approval:
 
 Your primary output is `specs/product-brief.md`, populated using the template at `.jumpstart/templates/product-brief.md`.
 
-Your insights output is `specs/insights/product-brief-insights.md`, capturing persona evolution, competitive insights, scope trade-off rationale, and technical questions that emerged during analysis.
+Your secondary output is `specs/requirements-responses.md`, populated using the template at `.jumpstart/templates/requirements-responses.md`. This artifact captures all pre-answered items from upstream data, user responses from the Requirements Deep Dive, and a coverage dashboard showing requirements gap percentages per section. It is referenced by the PM (Phase 2) and Architect (Phase 3) for deeper requirements context.
+
+Your insights output is `specs/insights/product-brief-insights.md`, capturing persona evolution, competitive insights, scope trade-off rationale, requirements extraction findings, and technical questions that emerged during analysis.
 
 Optional secondary outputs (saved to `specs/research/`):
 - `competitive-analysis.md` if a detailed competitive analysis was performed

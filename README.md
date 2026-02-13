@@ -12,7 +12,8 @@ Every artifact lives in your repository, version-controlled, diffable, and trans
 
 ## Table of Contents
 - [Quick Start](#quick-start)
-- [Onboarding Guide](ONBOARDING.md) 📘
+- [Onboarding Guide](docs/onboarding.md)
+- [How JumpStart Works](docs/how-jumpstart-works.md)
 - [How It Works](#how-it-works)
 - [Commands](#commands)
 - [Advisory Agents](#advisory-agents)
@@ -72,7 +73,7 @@ flowchart TB
 
 ## Quick Start
 
-> **👋 First time here?** Check out the **[Onboarding Guide](ONBOARDING.md)** for a complete walkthrough including configuration details, agent orchestration, and best practices.
+> **👋 First time here?** Check out the **[Onboarding Guide](docs/onboarding.md)** for a complete walkthrough including configuration details, agent orchestration, and best practices. For a deep dive into every agent, their tools, outputs, and how JumpStart compares to vanilla AI coding, see **[How JumpStart Works](docs/how-jumpstart-works.md)**.
 
 ### 1. Install
 

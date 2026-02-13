@@ -238,6 +238,18 @@ agents:
     # Context7-verified technology evaluation, version pinning, library health
     # Outputs: specs/research/{topic}.md
 
+  requirements-extractor:
+    persona_file: "agents/requirements-extractor.md"
+    capture_insights: true
+    # Cross-references Scout + Challenger data against the PRD requirements checklist
+    # Curates prioritised question batches for the Analyst's Requirements Deep Dive
+    # Invoked as subagent by Analyst (full), PM (targeted), Architect (targeted)
+    checklist_source: ".jumpstart/guides/requirements-checklist.md"   # Path to the exhaustive PRD question checklist
+    max_curated_questions: 60             # Maximum questions to include in curated set
+    min_priority_batches: 3               # Minimum Tier 1 (Critical) batches the Analyst must ask
+    section_relevance_override: {}        # Per-project overrides for section relevance scoring
+                                          #   Example: { "15": "HIGH" } to force AI section to HIGH relevance
+
   refactor:
     persona_file: "agents/refactor.md"
     capture_insights: true

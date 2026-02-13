@@ -201,6 +201,7 @@ The framework provides **specialized advisory agents** that extend the core phas
 - **Performance Analyst** (`/jumpstart.performance`): NFR quantification, load profiles, bottleneck analysis
 - **Technical Writer** (`/jumpstart.docs`): Documentation freshness audit, README maintenance, AGENTS.md files
 - **Domain Researcher** (`/jumpstart.research`): Context7-verified technology evaluation, version pinning
+- **Requirements Extractor** (subagent only): Cross-references Scout + Challenger data against the exhaustive PRD requirements checklist to curate prioritised question batches for the Analyst's user elicitation. Also invocable by the PM (targeted functional/governance questions) and Architect (targeted NFR/integration/architecture questions)
 - **Refactoring Agent** (`/jumpstart.refactor`): Complexity analysis, code smell detection, structural improvement
 - **Maintenance Agent** (`/jumpstart.maintenance`): Dependency drift, spec drift, technical debt inventory
 - **Quick Developer** (`/jumpstart.quick`): Abbreviated 3-step workflow for bug fixes and tiny features

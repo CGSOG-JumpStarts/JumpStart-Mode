@@ -195,6 +195,37 @@ Explicit boundary statements that define the scope limits for this project. Thes
 
 ---
 
+## Requirements Coverage Summary
+
+Coverage of the exhaustive PRD requirements checklist (`.jumpstart/guides/requirements-checklist.md`), based on upstream data extraction and user responses collected during the Requirements Deep Dive.
+
+| Section | Relevance | Coverage | Key Gaps |
+|---------|-----------|----------|----------|
+| 1 — Context, Goals | [HIGH/MED/LOW] | [%] | [Brief description of remaining gaps, or "—" if fully covered] |
+| 2 — System Inventory | | | |
+| 3 — Pain Points | | | |
+| 4 — Functional Reqs | | | |
+| 5 — NFRs | | | |
+| 6 — Data & Integration | | | |
+| 7 — Compatibility | | | |
+| 8 — Users & UX | | | |
+| 9 — Governance & Risk | | | |
+| 10 — Releases | | | |
+| 11 — Tech Architecture | | | |
+| 12 — Cost & Budget | | | |
+| 13 — Team & Staffing | | | |
+| 14 — Documentation | | | |
+| 15 — AI Components | | | |
+| 16 — Compliance | | | |
+| 17 — Observability | | | |
+| 18 — Vendors | | | |
+
+> **Full requirements responses:** [specs/requirements-responses.md](requirements-responses.md)
+
+_Note: Sections with HIGH relevance and >50% gap are flagged with `[NEEDS CLARIFICATION]` markers for downstream agents (PM, Architect)._
+
+---
+
 ## Risks to the Product Concept
 
 | Risk | Impact | Probability | Mitigation |

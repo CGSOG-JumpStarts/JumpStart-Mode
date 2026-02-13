@@ -138,6 +138,7 @@ Phase agents may invoke advisory agents as subagents using the `agent` tool. Thi
 | **Jump Start: Security** | `@Jump Start: Security` | STRIDE threat modelling, OWASP audits, compliance constraints |
 | **Jump Start: Performance** | `@Jump Start: Performance` | NFR quantification, load profiles, bottleneck analysis |
 | **Jump Start: Researcher** | `@Jump Start: Researcher` | Context7-verified technology evaluation, library health |
+| **Jump Start: Requirements Extractor** | `@Jump Start: Requirements Extractor` | PRD requirements checklist curation, upstream context cross-referencing, question prioritisation |
 | **Jump Start: UX Designer** | `@Jump Start: UX Designer` | Emotional mapping, accessibility, interaction patterns |
 | **Jump Start: Refactor** | `@Jump Start: Refactor` | Complexity analysis, code smells, structural improvements |
 | **Jump Start: Tech Writer** | `@Jump Start: Tech Writer` | Documentation freshness, README audits |

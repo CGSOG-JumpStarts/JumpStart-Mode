@@ -16,6 +16,7 @@ npm install
 | `npm run test:unit` | Schema validation + spec quality tests (Layers 1 & 3) |
 | `npm run test:integration` | Handoff contract tests (Layer 2) |
 | `npm run test:regression` | Golden master regression tests (Layer 5) |
+| `npm run test:requirements` | Requirements Extractor feature validation |
 | `npm run test:all` | Run every test suite |
 
 You can also use the CLI:
@@ -66,6 +67,18 @@ Static analysis of prose quality in specification documents:
 
 **Fixtures:** `adversarial-review-tests/known-violations.md` (deliberately bad PRD for adversarial testing).
 
+### Requirements Extractor Feature Validation (`test-requirements-extractor.test.js`)
+
+End-to-end validation of the Requirements Extractor advisory agent and its integration with the Analyst workflow:
+
+- **Agent definition integrity** — verifies all required sections, 7-step extraction protocol, classification types, priority formula, section relevance scoring (brownfield/greenfield), and domain amplification logic
+- **Template integrity** — validates `requirements-responses.md` template frontmatter, all 18 section headings, Coverage Dashboard rows, Downstream Impact Notes (PM/Architect/Developer), and Linked Data JSON-LD block
+- **Analyst integration** — confirms Steps 1.5 (Requirements Discovery) and 2.5 (Requirements Deep Dive) exist in `analyst.md`, subagent invocation, fallback when unavailable, `ask_questions` tool usage, and output references
+- **Config registration** — checks `requirements-extractor` block in `config.yaml` with persona_file, checklist_source, max_curated_questions, min_priority_batches, and section_relevance_override
+- **Product Brief template** — verifies Requirements Coverage Summary section placement, 18-section coverage table, link to requirements-responses.md, and NEEDS CLARIFICATION markers
+- **Cross-reference integrity** — ensures no stale `requirements.md` paths, config persona_file and checklist_source resolve to real files, AGENTS.md subagent table entry, and template upstream_refs are correct
+- **Prose quality** — applies ambiguity detection, smell detection (wishful-thinking, missing-owner), and composite scoring (≥70 threshold) to the agent definition
+
 ### Layer 4 — LLM-as-a-Judge *(agent-driven, not automated)*
 
 Adversarial and peer review are triggered via slash commands (`/jumpstart.adversary`, `/jumpstart.reviewer`) and produce markdown reports. No automated test suite — the agent personas live in `.jumpstart/agents/adversary.md` and `.jumpstart/agents/reviewer.md`.
@@ -87,10 +100,11 @@ Structural regression testing that compares agent outputs against known-good bas
 ```
 tests/
 ├── README.md
-├── test-schema.test.js          # Layer 1
-├── test-handoffs.test.js        # Layer 2
-├── test-spec-quality.test.js    # Layer 3
-├── test-regression.test.js      # Layer 5
+├── test-schema.test.js                    # Layer 1
+├── test-handoffs.test.js                  # Layer 2
+├── test-spec-quality.test.js              # Layer 3
+├── test-requirements-extractor.test.js    # Requirements Extractor feature
+├── test-regression.test.js                # Layer 5
 ├── fixtures/
 │   ├── valid/                   # Conforming spec artifacts
 │   └── invalid/                 # Intentionally broken artifacts
