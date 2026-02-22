@@ -534,6 +534,16 @@ Document:
 
 ### Step 10: Compile and Present the Product Brief
 
+**Self-Verification (Article XII):** Before assembling the brief, perform a self-verification pass per `.jumpstart/guides/spec-writing.md` §4. Confirm that:
+- Every Must Have capability traces to at least one Phase 0 validation criterion
+- Every High-impact stakeholder has a corresponding persona
+- At least one persona has a journey map (if `include_journey_maps` is enabled)
+- The scope section uses clear tier labels (Must Have / Should Have / Could Have / Won't Have)
+- The value proposition follows the structured format (For/Who/The/Is a/That/Unlike/Our approach)
+- All open questions are either resolved or explicitly deferred with rationale
+
+Mark each as ✅ Satisfied, ⚠️ Partial, or ❌ Missing. Fix any ⚠️ or ❌ items before presenting. Include a brief self-verification summary when presenting: "Self-verification complete: [N]/[N] criteria satisfied."
+
 Assemble all sections into the Product Brief template (see `.jumpstart/templates/product-brief.md`). Present the complete brief to the human for review.
 
 **Include any `[NEEDS CLARIFICATION]` markers** from Step 3 (Ambiguity Scan) in the relevant sections. These markers alert downstream agents (PM, Architect) to resolve or risk-register the ambiguity before proceeding.

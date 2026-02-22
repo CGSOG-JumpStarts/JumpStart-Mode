@@ -96,6 +96,21 @@ ceremony:
   profile: standard
 
 # ---------------------------------------------------------------------------
+# Spec Authoring Quality (Article XII)
+# ---------------------------------------------------------------------------
+# Controls spec authoring standards from .jumpstart/guides/spec-writing.md.
+# See .jumpstart/roadmap.md Article XII for the enforceable principles.
+spec_authoring:
+  six_core_areas_required: true         # Require architecture specs to cover all 6 core areas
+                                        #   Commands, Testing, Project Structure, Code Style,
+                                        #   Git Workflow, Boundaries
+  extended_toc: true                    # Generate Extended TOC for specs exceeding the line threshold
+  extended_toc_threshold: 500           # Line count threshold for triggering Extended TOC generation
+  self_verification: true               # Agents must self-verify output against spec before presenting
+  max_spec_lines: 800                   # Advisory threshold — suggest decomposition above this limit
+  context_scoping: true                 # Agents should scope context to relevant sections per task
+
+# ---------------------------------------------------------------------------
 # Workflow Settings
 # ---------------------------------------------------------------------------
 workflow:
@@ -524,6 +539,7 @@ template_inheritance:
 skills:
   enabled: true
   dir: .jumpstart/skills           # Directory containing installed skills
+  registry_url: https://raw.githubusercontent.com/CGSOG-JumpStarts/JumpStart-Skills/main/registry/index.json
 
 # ---------------------------------------------------------------------------
 # Design System (Item 97)

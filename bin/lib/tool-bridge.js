@@ -185,6 +185,54 @@ function createToolBridge(options = {}) {
 
     async semantic_search(args) {
       return { results: [] };
+    },
+
+    async marketplace_install(args) {
+      // Marketplace installer tool — available to architect + developer phases
+      try {
+        const installModule = await import('./install.js');
+        const { itemId, type, force, search } = args;
+
+        // Search mode
+        if (search) {
+          const index = await installModule.fetchRegistryIndex();
+          const results = installModule.searchItems(index, search);
+          return {
+            success: true,
+            action: 'search',
+            query: search,
+            results: results.map(r => ({ id: r.id, displayName: r.displayName, type: r.type, category: r.category, version: r.version })),
+            count: results.length
+          };
+        }
+
+        // Normalize item ID
+        const resolvedId = type ? `${type}.${itemId}` : itemId;
+
+        if (dryRun) {
+          return { success: true, action: 'install', itemId: resolvedId, dryRun: true };
+        }
+
+        const result = await installModule.install(resolvedId, {
+          projectRoot: workspaceDir,
+          force: force || false,
+          onProgress: () => {},
+        });
+
+        return {
+          success: true,
+          action: 'install',
+          itemId: resolvedId,
+          installed: result.installed || [],
+          fileCount: result.fileCount || 0,
+          remappedFiles: result.remappedFiles || [],
+          ide: result.ide,
+          version: result.item?.version,
+          dependenciesInstalled: result.dependenciesInstalled || [],
+        };
+      } catch (err) {
+        return { success: false, error: err.message };
+      }
     }
   };
 

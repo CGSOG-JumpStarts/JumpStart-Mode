@@ -125,19 +125,45 @@ function collectFiles(dir) {
 
 /**
  * Load or initialize a registry index.
+ * Supports both local module format ({ modules: [...] }) and
+ * Skills marketplace format ({ items: [...] }).
  *
  * @param {string} registryPath - Path to the registry index file.
- * @returns {object} Registry index.
+ * @returns {object} Registry index (normalized with both `modules` and `items` keys).
  */
 export function loadRegistry(registryPath) {
   if (fs.existsSync(registryPath)) {
     try {
-      return JSON.parse(fs.readFileSync(registryPath, 'utf8'));
+      const data = JSON.parse(fs.readFileSync(registryPath, 'utf8'));
+      return normalizeRegistryFormat(data);
     } catch (err) {
-      return { modules: [], updated_at: new Date().toISOString() };
+      return { modules: [], items: [], updated_at: new Date().toISOString() };
     }
   }
-  return { modules: [], updated_at: new Date().toISOString() };
+  return { modules: [], items: [], updated_at: new Date().toISOString() };
+}
+
+/**
+ * Normalize a registry payload to contain both `modules` and `items` keys.
+ * Detects Skills marketplace format (has `items[]`) vs local module format (has `modules[]`).
+ *
+ * @param {object} data - Raw parsed registry JSON.
+ * @returns {object} Normalized registry with both keys.
+ */
+export function normalizeRegistryFormat(data) {
+  const result = { ...data };
+  if (Array.isArray(data.items) && !data.modules) {
+    // Skills marketplace format — add empty modules for compat
+    result.modules = [];
+  }
+  if (Array.isArray(data.modules) && !data.items) {
+    // Local module format — add empty items for compat
+    result.items = [];
+  }
+  if (!result.modules) result.modules = [];
+  if (!result.items) result.items = [];
+  if (!result.updated_at) result.updated_at = result.generatedAt || new Date().toISOString();
+  return result;
 }
 
 /**

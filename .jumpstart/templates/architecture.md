@@ -447,6 +447,19 @@ See the insights document for complete decision rationale, alternatives consider
 
 ---
 
+## Six Core Areas Coverage (Article XII)
+
+> **Instruction:** Verify that this Architecture Document covers all six core areas defined in `.jumpstart/guides/spec-writing.md` §2 and Article XII of `.jumpstart/roadmap.md`. Check each box when the area is confirmed present and complete. All boxes must be checked for Phase Gate approval.
+
+- [ ] **Commands**: Build, test, lint, deploy, and format commands documented with full flags and expected behavior
+- [ ] **Testing**: Test framework, test file locations, coverage expectations, and how to run tests documented
+- [ ] **Project Structure**: Directory layout with purpose annotations for every directory documented
+- [ ] **Code Style**: Naming conventions, formatting rules, and at least one real code example per pattern provided
+- [ ] **Git Workflow**: Branch naming convention, commit message format, and PR/merge requirements documented
+- [ ] **Boundaries**: Three-tier constraints (Always do / Ask first / Never do) documented early in this document
+
+---
+
 ## Phase Gate Approval
 
 - [ ] Human has reviewed this Architecture Document

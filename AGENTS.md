@@ -157,6 +157,114 @@ Phase agents may invoke advisory agents as subagents using the `agent` tool. Thi
 
 ---
 
+### 7. The Marketplace Protocol
+
+The **Skills Marketplace** provides a curated catalog of installable skills, agents, prompts, and bundles hosted at the URL in `config.skills.registry_url`.
+
+#### Item Types
+
+| Type | Entry File | Default Install Path | Description |
+|------|-----------|---------------------|-------------|
+| `skill` | `SKILL.md` | `.jumpstart/skills/<name>/` | Domain knowledge packages — may contain agents, prompts, scripts |
+| `agent` | `*.agent.md` | `.jumpstart/agents/<name>/` | Single-purpose agent persona |
+| `prompt` | `*.prompt.md` | `.jumpstart/prompts/<name>/` | Reusable prompt template |
+| `bundle` | `bundle.json` | *(composite)* | Installs multiple items together |
+
+#### Installation Commands
+
+```bash
+# Install by dotted ID
+npx jumpstart-mode install skill.ignition
+
+# Install by type + name (space-separated)
+npx jumpstart-mode install skill ignition
+
+# Install by bare name (auto-resolves type)
+npx jumpstart-mode install ignition
+
+# Install a bundle (all members)
+npx jumpstart-mode install bundle.ignition-suite
+
+# Search the marketplace
+npx jumpstart-mode install --search pptx
+
+# Force re-install
+npx jumpstart-mode install skill.ignition --force
+
+# Dry-run (preview without downloading)
+npx jumpstart-mode install skill.ignition --dry-run
+```
+
+#### Lifecycle Commands
+
+```bash
+# List installed items
+npx jumpstart-mode status
+
+# Uninstall an item (and its remapped files)
+npx jumpstart-mode uninstall skill.ignition
+
+# Check for updates
+npx jumpstart-mode update
+
+# Update a specific item
+npx jumpstart-mode update skill.ignition
+```
+
+#### Agentic Installation Flow
+
+1. **Registry fetch** — Downloads `registry/index.json` from `config.skills.registry_url`.
+2. **Item matching** — Resolves by exact ID, `type.name` shorthand, bare name, or semantic search across `displayName`, `tags`, `keywords`, `searchText`.
+3. **Dependency resolution** — Reads `dependencies[]` from the registry entry and builds a topological install order. Circular dependencies are detected and reported. Already-installed items are skipped.
+4. **Compatibility check** — Compares `compatibility.jumpstartMode` against the running framework version. Warns if outside range (does not block).
+5. **Download & verify** — Fetches the zip artifact from `download.zip` and verifies the SHA256 checksum against `download.checksumSha256`.
+6. **Extract to staging** — Unpacks to a temp directory.
+7. **Install to target paths** — Copies files to `install.targetPaths` (declared in the manifest or derived from type).
+8. **IDE-aware file remapping** — Auto-detects the IDE:
+   - **VS Code + Copilot** (`.github/` exists): agents → `.github/agents/`, prompts → `.github/prompts/`
+   - **Claude Code / generic**: agents → `.jumpstart/agents/`, prompts → `.jumpstart/prompts/`
+   The `contains.agents[]` and `contains.prompts[]` arrays list which files to remap.
+9. **Record in lockfile** — Writes to `.jumpstart/installed.json` (item ID, version, target paths, remapped files, timestamp).
+
+#### Agent Tool — `marketplace_install`
+
+Available to `architect` and `developer` phases via tool-bridge. Agents can programmatically install marketplace items:
+
+```json
+{
+  "name": "marketplace_install",
+  "arguments": {
+    "itemId": "ignition",
+    "type": "skill",
+    "force": false
+  }
+}
+```
+
+Search mode:
+```json
+{
+  "name": "marketplace_install",
+  "arguments": {
+    "itemId": "",
+    "search": "presentations"
+  }
+}
+```
+
+#### Registry Index
+
+The master catalog at `registry/index.json` contains all item metadata:
+- `download.zip` — Raw GitHub URL to the packaged zip
+- `download.checksumSha256` — SHA256 digest for verification
+- `install.targetPaths` — Where to extract the item
+- `contains` — Sub-resources (agents, prompts, scripts) inside skills
+- `dependencies` — Other items that must be installed first
+- `compatibility` — Version ranges and tool requirements
+- `includes` — (bundles only) Member item IDs
+
+---
+
 ## Troubleshooting
 
 * **Missing Context:** If an upstream artifact is missing (e.g., running `/jumpstart.plan` before Phase 1 is done), **stop** and instruct the user to complete the missing phase first.

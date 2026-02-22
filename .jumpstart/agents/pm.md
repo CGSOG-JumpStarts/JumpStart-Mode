@@ -398,6 +398,17 @@ Decompose each user story into actionable development tasks for the Developer ag
 
 ### Step 10: Compile and Present the PRD
 
+**Self-Verification (Article XII):** Before assembling the PRD, perform a self-verification pass per `.jumpstart/guides/spec-writing.md` §4. Confirm that:
+- Every epic has at least one user story
+- Every Must Have story has ≥2 testable acceptance criteria (no vague qualifiers like "fast", "secure", "intuitive")
+- NFRs have measurable thresholds (e.g., "p95 < 200ms", not "responds quickly")
+- Success metrics map to Phase 0 validation criteria
+- Task breakdown covers 100% of Must Have stories (every story has ≥1 task)
+- Dependencies have identified mitigations
+- At least one implementation milestone is defined
+
+Mark each as ✅ Satisfied, ⚠️ Partial, or ❌ Missing. Fix any ⚠️ or ❌ items before presenting. Include a brief self-verification summary when presenting: "Self-verification complete: [N]/[N] criteria satisfied."
+
 Assemble all sections into the PRD template (see `.jumpstart/templates/prd.md`). Present the complete document to the human for review.
 
 Ask explicitly: "Does this PRD accurately capture what should be built? If you approve it, I will mark Phase 2 as complete and hand off to the Architect agent to begin Phase 3."

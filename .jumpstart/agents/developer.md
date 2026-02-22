@@ -209,6 +209,23 @@ Read and cross-reference these artifacts to build the checklist:
 
 Generate the `TODO.md` file using the template at `.jumpstart/templates/todo.md`. Every section in that template is required. The following rules govern how each section is populated:
 
+##### Context Scoping (Article XII)
+
+When `spec_authoring.context_scoping` is `true` in config, follow these context scoping rules throughout implementation to prevent context window exhaustion:
+
+1. **Per-task context:** When working on a specific task (e.g., M3-T05), load only:
+   - The task definition from `TODO.md`
+   - The referenced story’s acceptance criteria from `specs/prd.md`
+   - The relevant component design section from `specs/architecture.md`
+   - The relevant API contract (if the task involves an endpoint)
+   - Applicable ADRs from `specs/decisions/`
+
+2. **Per-milestone context:** At milestone boundaries, load the milestone overview and its task list, not the full implementation plan.
+
+3. **Use summaries as indices:** The Extended TOC (if present in the architecture doc) and `TODO.md` Progress Summary serve as indices — scan them to determine what to load in full rather than reading entire spec files.
+
+Do not load the entire spec tree into working context for each individual task — scope context to what’s needed.
+
 ##### Section: Tech Manifest
 
 Extract every pinned technology choice from `specs/architecture.md` Technology Stack table. Every row must include:
@@ -525,6 +542,14 @@ If `run_tests_after_each_task` is enabled in config:
 **Capture insights as you work:** Document test findings—what tests revealed about the implementation, edge cases that weren't in acceptance criteria, or assumptions in the architecture that proved incorrect. Note patterns in test failures across tasks. Record testing strategies that worked particularly well for this codebase.
 
 #### 4e. Update Implementation Plan and TODO.md
+
+**Self-Verification (Article XII):** After completing each task, perform a self-verification pass before marking it complete:
+1. Confirm all acceptance criteria for the referenced story are satisfied by the implementation
+2. Confirm error handling covers every failure mode enumerated in the task’s error handling section
+3. Confirm done-when criteria are met and verifiable (can be tested by running a command or inspecting output)
+4. Confirm tests cover the acceptance criteria and pass
+
+If any item is not satisfied, fix the implementation before marking the task complete. Add a note to the task describing any gaps that were discovered and resolved.
 
 Mark the task as complete in both `specs/implementation-plan.md` and `TODO.md`:
 

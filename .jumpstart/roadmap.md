@@ -239,6 +239,28 @@ The framework maintains institutional memory that persists across sessions and p
 
 ---
 
+### Article XII — Spec Authoring Quality
+
+Specification artifacts must meet authoring quality standards that ensure agents can reliably consume and implement them. This article codifies the practices from `.jumpstart/guides/spec-writing.md`.
+
+1. **Six Core Areas:** Every `specs/architecture.md` must address six core areas: **Commands** (build, test, lint, deploy with full flags), **Testing** (framework, file locations, coverage expectations), **Project Structure** (directory layout with purpose annotations), **Code Style** (naming conventions, formatting rules, at least one code example per pattern), **Git Workflow** (branch naming, commit message format, PR requirements), and **Boundaries** (three-tier: Always do / Ask first / Never do). The Architect agent must include a Six Core Areas Coverage checklist in the architecture document. Incomplete coverage must be flagged before Phase Gate approval.
+
+2. **Extended TOC for Large Specs:** When `spec_authoring.extended_toc` is `true` in config and a spec artifact exceeds the configured line threshold (default: 500 lines), the generating agent must include an Extended Table of Contents immediately after the YAML frontmatter. The Extended TOC provides per-section line ranges and 1–2 sentence summaries, enabling downstream agents and humans to quickly locate relevant content without reading the full document.
+
+3. **Self-Verification:** Every agent must perform a self-verification pass against the spec's requirements before presenting an artifact for human approval. The agent enumerates all requirements the artifact must satisfy (from upstream artifacts, phase gate checklists, and config settings), marks each as Satisfied / Partial / Missing, and reports the results when presenting. Gaps must be explicitly disclosed — not silently ignored.
+
+4. **Context Scoping:** When consuming specs for implementation, agents must ingest only the sections relevant to the current task rather than loading the entire spec tree. The Extended TOC and `TODO.md` Progress Summary serve as indices for locating needed context. This prevents context window exhaustion and the "curse of instructions" where excessive context degrades agent performance.
+
+5. **Boundary Placement:** Three-tier boundaries (Always do / Ask first / Never do) must appear in every architecture and implementation plan document. These boundaries must be placed **early** in the document — before implementation details — so agents encounter constraints before they begin generating code.
+
+6. **Decomposition Threshold:** When a single spec artifact exceeds the configured line limit (default: 800 lines, governed by `spec_authoring.max_spec_lines`), agents should consider decomposing it into linked sub-specs (e.g., separate API contract spec, data model spec). Each sub-spec must be cross-referenced from the parent document.
+
+**Enforcement:** Governed by `spec_authoring.*` in `.jumpstart/config.yaml`. The six core areas check and self-verification are validated by the spec-checklist. Extended TOC generation is triggered automatically by the generating agent when the threshold is exceeded.
+
+**Rationale:** Agent performance degrades when specs are vague, excessively long, or missing key areas. By enforcing completeness (six core areas), manageability (Extended TOC, decomposition), quality (self-verification), and efficiency (context scoping), this article ensures specs remain effective guidance documents regardless of project size.
+
+---
+
 ## Governance
 
 This Roadmap supersedes all other agent protocols and practices. In the event of a conflict between a Roadmap principle and an agent-specific instruction, the Roadmap prevails.

@@ -197,6 +197,36 @@ const ALL_TOOLS = [
         required: ['command', 'explanation', 'goal', 'isBackground']
       }
     }
+  },
+  {
+    type: 'function',
+    function: {
+      name: 'marketplace_install',
+      description: 'Install a skill, agent, prompt, or bundle from the JumpStart Skills marketplace. Fetches the registry, resolves dependencies, downloads, verifies checksums, extracts files, and remaps agents/prompts to IDE-canonical directories.',
+      parameters: {
+        type: 'object',
+        properties: {
+          itemId: {
+            type: 'string',
+            description: 'Item ID (e.g. "skill.ignition") or bare name (e.g. "ignition"). Also supports type prefix separately via the type parameter.'
+          },
+          type: {
+            type: 'string',
+            enum: ['skill', 'agent', 'prompt', 'bundle'],
+            description: 'Optional item type. When provided with a bare itemId, forms "type.itemId" (e.g. type="skill", itemId="ignition" → "skill.ignition").'
+          },
+          force: {
+            type: 'boolean',
+            description: 'Re-install even if the item is already present at the same or newer version.'
+          },
+          search: {
+            type: 'string',
+            description: 'Instead of installing, search the registry for items matching this query and return the results.'
+          }
+        },
+        required: ['itemId']
+      }
+    }
   }
 ];
 
@@ -215,8 +245,8 @@ const PHASE_TOOL_ADDITIONS = {
   challenger: [],
   analyst:    [],
   pm:         [],
-  architect:  [],
-  developer:  ['run_in_terminal']
+  architect:  ['marketplace_install'],
+  developer:  ['run_in_terminal', 'marketplace_install']
 };
 
 /**

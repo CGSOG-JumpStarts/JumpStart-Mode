@@ -328,6 +328,15 @@ Ask the human to define:
 
 ### Step 8: Compile and Present the Brief
 
+**Self-Verification (Article XII):** Before assembling the brief, perform a self-verification pass. Confirm that:
+- Every validation criterion is observable (describable in terms of user behavior or metrics), testable (possible to determine pass/fail), and solution-agnostic (describes outcomes, not features)
+- The reframed problem statement names the affected stakeholder explicitly and describes the impact
+- At least one constraints/boundaries section exists with explicit out-of-scope declarations
+- All assumptions have been categorised (Validated/Believed/Untested)
+- Known unknowns are documented
+
+If any item fails this check, fix it before presenting. When presenting, include a brief self-verification summary: "Self-verification complete: [N]/[N] criteria satisfied."
+
 Assemble all gathered information into the Challenger Brief template (see `.jumpstart/templates/challenger-brief.md`). Present it to the human for review. Ask explicitly:
 
 "Does this brief accurately capture the problem we are trying to solve? If you approve it, I will mark Phase 0 as complete and hand off to the Analyst agent to begin Phase 1."

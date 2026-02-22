@@ -348,7 +348,31 @@ Skills are modular packages that extend agent capabilities with specialized doma
     └── SKILL.md
 ```
 
-Create new skills using the built-in skill-creator, or install them from modules. See `.jumpstart/skills/README.md` for details.
+Create new skills using the built-in skill-creator, or install them from the marketplace.
+
+#### Marketplace
+
+Install skills, agents, prompts, and bundles from the [Skills Marketplace](https://raw.githubusercontent.com/CGSOG-JumpStarts/JumpStart-Skills/main/registry/index.json):
+
+```bash
+# Install by type + name
+npx jumpstart-mode install skill ignition
+
+# Install by dotted ID
+npx jumpstart-mode install skill.ignition
+
+# Search
+npx jumpstart-mode install --search pptx
+
+# Check installed items
+npx jumpstart-mode status
+
+# Update / uninstall
+npx jumpstart-mode update
+npx jumpstart-mode uninstall skill.ignition
+```
+
+The installer auto-detects your IDE and remaps agent/prompt files to the right directories (`.github/agents/` for VS Code + Copilot, `.jumpstart/agents/` for Claude Code). Dependencies are resolved automatically, downloads are SHA256-verified, and all installs are tracked in `.jumpstart/installed.json`. Agents in architect and developer phases can also install items programmatically via the `marketplace_install` tool.
 
 ### Modules
 

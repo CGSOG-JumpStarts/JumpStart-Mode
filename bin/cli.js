@@ -1050,6 +1050,232 @@ async function main() {
       return;
     }
 
+    if (subcommand === 'install') {
+      // ── Marketplace Item Installer ─────────────────────────────────────────
+      // Supports:  jumpstart-mode install skill.ignition
+      //            jumpstart-mode install skill ignition
+      //            jumpstart-mode install ignition            (bare name lookup)
+      //            jumpstart-mode install --search <query>
+      //            jumpstart-mode install --search pptx
+      const {
+        install, searchItems, fetchRegistryIndex,
+        normalizeItemId, detectIDE,
+      } = await import('./lib/install.js');
+
+      const registryIdx = process.argv.indexOf('--registry');
+      const registryUrl = registryIdx >= 0 ? process.argv[registryIdx + 1] : undefined;
+      const dryRun = process.argv.includes('--dry-run');
+      const force = process.argv.includes('--force');
+
+      // Collect positional args (skip flags)
+      const positional = process.argv.slice(3).filter(
+        (a) => !a.startsWith('--') && !(registryIdx >= 0 && a === process.argv[registryIdx + 1])
+      );
+      const first = positional[0];
+      const second = positional[1];
+
+      if (!first || first === '--help') {
+        console.log(chalk.bold('Usage: jumpstart-mode install <item-id> [options]'));
+        console.log(chalk.bold('       jumpstart-mode install <type> <name> [options]'));
+        console.log('');
+        console.log('  Install skills, agents, prompts, or bundles from the Skills marketplace.');
+        console.log('');
+        console.log(chalk.dim('Examples:'));
+        console.log('  jumpstart-mode install skill.ignition');
+        console.log('  jumpstart-mode install skill ignition');
+        console.log('  jumpstart-mode install ignition');
+        console.log('  jumpstart-mode install bundle.ignition-suite');
+        console.log('');
+        console.log(chalk.dim('Search:'));
+        console.log('  jumpstart-mode install --search pptx');
+        console.log('');
+        console.log(chalk.dim('Options:'));
+        console.log('  --registry <url>   Override registry URL');
+        console.log('  --force            Re-install even if already present');
+        console.log('  --dry-run          Show what would be installed');
+        return;
+      }
+
+      if (first === '--search') {
+        const query = second || process.argv[4] || '';
+        const index = await fetchRegistryIndex(registryUrl);
+        const results = searchItems(index, query);
+        if (results.length === 0) {
+          console.log(chalk.yellow(`No items found matching "${query}".`));
+        } else {
+          console.log(chalk.bold(`Found ${results.length} item(s):`));
+          for (const r of results) {
+            console.log(`  ${chalk.green(r.id)} — ${r.displayName} [${r.category}] (${r.version})`);
+            if (r.description) console.log(`    ${chalk.dim(r.description)}`);
+          }
+        }
+        return;
+      }
+
+      // Normalize: "skill" "ignition" → "skill.ignition"
+      const itemId = normalizeItemId(first, second);
+      if (!itemId) {
+        console.error(chalk.red(`Cannot resolve item from "${first}". Try: jumpstart-mode install --search ${first}`));
+        process.exit(1);
+      }
+
+      try {
+        const ide = detectIDE(process.cwd());
+        if (dryRun) {
+          console.log(chalk.dim(`[dry-run] Would install ${itemId}`));
+          console.log(chalk.dim(`  IDE detected: ${ide.ide}`));
+          console.log(chalk.dim(`  Agents → ${ide.agentDir}/`));
+          console.log(chalk.dim(`  Prompts → ${ide.promptDir}/`));
+        }
+
+        console.log(chalk.dim(`Installing ${itemId}...`));
+        const result = await install(itemId, {
+          registryUrl,
+          projectRoot: process.cwd(),
+          force,
+          dryRun,
+          onProgress: (msg) => console.log(chalk.dim(msg)),
+        });
+
+        if (result.bundleId) {
+          // Bundle result
+          console.log(chalk.green(`\n✓ Bundle ${result.bundleId} installed:`));
+          for (const r of result.installed) {
+            if (r.error) {
+              console.log(chalk.red(`  ✗ ${r.item.id}: ${r.error}`));
+            } else {
+              console.log(chalk.green(`  ✓ ${r.item.id} → ${(r.installed || []).join(', ')}`));
+              if (r.remappedFiles && r.remappedFiles.length > 0) {
+                console.log(chalk.dim(`    Remapped: ${r.remappedFiles.join(', ')}`));
+              }
+            }
+          }
+        } else if (result.skipped) {
+          console.log(chalk.yellow(`\n↳ ${result.item.id} v${result.item.version} already installed.`));
+        } else {
+          console.log(chalk.green(`\n✓ ${result.item.id} v${result.item.version} installed`));
+          console.log(`  Location: ${(result.installed || []).join(', ')}`);
+          console.log(`  Files: ${result.fileCount}`);
+          console.log(`  IDE: ${result.ide || 'unknown'}`);
+          if (result.remappedFiles && result.remappedFiles.length > 0) {
+            console.log(`  Remapped: ${result.remappedFiles.join(', ')}`);
+          }
+          if (result.dependenciesInstalled && result.dependenciesInstalled.length > 0) {
+            console.log(`  Dependencies: ${result.dependenciesInstalled.join(', ')}`);
+          }
+        }
+      } catch (err) {
+        console.error(chalk.red(`Install failed: ${err.message}`));
+        process.exit(1);
+      }
+      return;
+    }
+
+    if (subcommand === 'uninstall') {
+      // ── Marketplace Item Uninstaller ───────────────────────────────────────
+      const { uninstallItem, normalizeItemId } = await import('./lib/install.js');
+      const first = process.argv[3];
+      const second = process.argv[4];
+      const itemId = normalizeItemId(first, second);
+
+      if (!itemId || first === '--help') {
+        console.log(chalk.bold('Usage: jumpstart-mode uninstall <item-id>'));
+        console.log(chalk.bold('       jumpstart-mode uninstall <type> <name>'));
+        console.log('');
+        console.log(chalk.dim('Examples:'));
+        console.log('  jumpstart-mode uninstall skill.ignition');
+        console.log('  jumpstart-mode uninstall skill ignition');
+        return;
+      }
+
+      try {
+        const result = uninstallItem(itemId, process.cwd());
+        console.log(chalk.green(`✓ Uninstalled ${itemId}`));
+        if (result.removed.length > 0) {
+          console.log(`  Removed: ${result.removed.join(', ')}`);
+        }
+      } catch (err) {
+        console.error(chalk.red(`Uninstall failed: ${err.message}`));
+        process.exit(1);
+      }
+      return;
+    }
+
+    if (subcommand === 'status') {
+      // ── Installed Items Status ─────────────────────────────────────────────
+      const { getStatus } = await import('./lib/install.js');
+      const status = getStatus(process.cwd());
+
+      if (status.count === 0) {
+        console.log(chalk.yellow('No marketplace items installed.'));
+        console.log(chalk.dim('Install with: jumpstart-mode install skill ignition'));
+        return;
+      }
+
+      console.log(chalk.bold(`${status.count} marketplace item(s) installed:\n`));
+      for (const [id, entry] of Object.entries(status.items)) {
+        const typeColor = entry.type === 'skill' ? chalk.cyan
+          : entry.type === 'agent' ? chalk.magenta
+          : entry.type === 'prompt' ? chalk.blue
+          : chalk.white;
+        console.log(`  ${typeColor(entry.type.padEnd(6))} ${chalk.green(id)} v${entry.version}`);
+        console.log(`         ${chalk.dim('Installed: ' + entry.installedAt)}`);
+        if (entry.remappedFiles && entry.remappedFiles.length > 0) {
+          console.log(`         ${chalk.dim('Remapped:  ' + entry.remappedFiles.join(', '))}`);
+        }
+      }
+      return;
+    }
+
+    if (subcommand === 'update') {
+      // ── Update Installed Items ─────────────────────────────────────────────
+      const { updateItems, fetchRegistryIndex, checkUpdates, normalizeItemId } = await import('./lib/install.js');
+
+      const registryIdx = process.argv.indexOf('--registry');
+      const registryUrl = registryIdx >= 0 ? process.argv[registryIdx + 1] : undefined;
+      const first = process.argv[3];
+      const second = process.argv[4];
+      const itemId = (first && first !== '--help' && !first.startsWith('--'))
+        ? normalizeItemId(first, second)
+        : null;
+
+      if (first === '--help') {
+        console.log(chalk.bold('Usage: jumpstart-mode update [<item-id>]'));
+        console.log('');
+        console.log('  Update installed marketplace items to the latest registry version.');
+        console.log('  Omit <item-id> to check/update all items.');
+        return;
+      }
+
+      try {
+        const index = await fetchRegistryIndex(registryUrl);
+        const { updates, upToDate } = checkUpdates(process.cwd(), index);
+
+        if (updates.length === 0) {
+          console.log(chalk.green('✓ All installed items are up to date.'));
+          return;
+        }
+
+        console.log(chalk.bold(`${updates.length} update(s) available:`));
+        for (const u of updates) {
+          console.log(`  ${chalk.yellow(u.id)}: ${u.localVersion} → ${chalk.green(u.registryVersion)}`);
+        }
+
+        const results = await updateItems(itemId, {
+          registryUrl,
+          projectRoot: process.cwd(),
+          index,
+          onProgress: (msg) => console.log(chalk.dim(msg)),
+        });
+
+        console.log(chalk.green(`\n✓ Updated ${results.length} item(s).`));
+      } catch (err) {
+        console.error(chalk.red(`Update failed: ${err.message}`));
+        process.exit(1);
+      }
+      return;
+    }
+
     if (subcommand === 'usage') {
       // Usage summary (Item 99)
       const { summarizeUsage, generateUsageReport } = await import('./lib/usage.js');

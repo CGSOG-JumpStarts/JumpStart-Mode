@@ -551,6 +551,26 @@ Assemble all sections into:
 - `specs/implementation-plan.md` (using the template)
 - `specs/decisions/*.md` (one per ADR)
 
+**Self-Verification (Article XII):** Before presenting, perform a self-verification pass per `.jumpstart/guides/spec-writing.md` §4. Confirm that:
+- **Six Core Areas coverage:** The architecture document addresses all six areas:
+  - ✅ Commands: Build, test, lint, deploy commands documented with full flags
+  - ✅ Testing: Framework, file locations, coverage expectations documented
+  - ✅ Project Structure: Directory layout with purpose annotations documented
+  - ✅ Code Style: Naming conventions, formatting rules, code examples provided
+  - ✅ Git Workflow: Branch naming, commit message format, PR requirements documented
+  - ✅ Boundaries: Three-tier (Always do / Ask first / Never do) constraints documented
+- Every PRD story maps to at least one implementation task
+- Every NFR is addressed by the architecture or flagged as a gap
+- ADRs exist for all significant technical decisions
+- Technology versions are pinned and verified (via Context7 audit)
+- Task dependencies form a valid DAG (no circular dependencies)
+
+Mark each as ✅ Satisfied, ⚠️ Partial, or ❌ Missing. Fix any ⚠️ or ❌ items before presenting. Include a brief self-verification summary when presenting: "Self-verification complete: [N]/[N] criteria satisfied, six core areas: [N]/6 covered."
+
+**Extended TOC Generation (Article XII):** If `spec_authoring.extended_toc` is `true` in config and the combined `specs/architecture.md` + `specs/implementation-plan.md` exceeds `spec_authoring.extended_toc_threshold` lines (default: 500), generate an Extended Table of Contents section immediately after the YAML frontmatter in each document. The Extended TOC provides per-section line ranges and 1–2 sentence summaries. See `.jumpstart/guides/spec-writing.md` §3 for the format.
+
+**Spec Decomposition (Article XII):** If either document exceeds `spec_authoring.max_spec_lines` (default: 800 lines), consider decomposing it into linked sub-specs (e.g., separate API contract spec, data model spec). Each sub-spec must be cross-referenced from the parent document. Note the decomposition and rationale in your insights file.
+
 **Before presenting**, run the Diagram Verifier to validate all Mermaid diagrams in the compiled artifacts. If `diagram_verification.enabled` is `true` in config:
 1. Invoke `/jumpstart.verify` or run `npx jumpstart-mode verify` against `specs/architecture.md` and `specs/implementation-plan.md`.
 2. Fix any syntax errors or warnings flagged by the verifier.

@@ -47,4 +47,30 @@ Validate with: `npx jumpstart-mode validate-module <module-dir>`
 
 ## Marketplace
 
-Module packaging follows the schema defined in `.jumpstart/schemas/module.schema.json`. Future marketplace support will use `bin/lib/registry.js` for publishing and discovery.
+The **Skills Marketplace** is live. Browse and install skills, agents, prompts, and bundles:
+
+**Registry index:** https://raw.githubusercontent.com/CGSOG-JumpStarts/JumpStart-Skills/main/registry/index.json
+
+**Install an item:**
+
+```bash
+npx jumpstart-mode install skill.ignition
+npx jumpstart-mode install agent.deck-builder
+npx jumpstart-mode install bundle.ignition-suite
+```
+
+**Search the catalog:**
+
+```bash
+npx jumpstart-mode install --search pptx
+```
+
+**How it works:**
+- The registry index lists all available items with download URLs and SHA256 checksums.
+- `jumpstart-mode install` fetches the zip, verifies its checksum, and extracts to the item's `install.targetPaths` (e.g., `.jumpstart/skills/ignition/`).
+- Bundles resolve their `includes[]` array and install all member items.
+
+**Local modules vs marketplace items:**
+- Local modules use `module.json` manifests and live in `.jumpstart/modules/`.
+- Marketplace items use `package.json` manifests and install to `.jumpstart/skills/`, `.jumpstart/agents/`, or `.jumpstart/prompts/` per their type.
+- Both coexist. Local modules are validated with `npx jumpstart-mode validate-module <dir>`. Marketplace items are validated upstream in the JumpStart-Skills CI pipeline.

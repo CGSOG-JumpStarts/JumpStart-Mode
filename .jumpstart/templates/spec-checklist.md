@@ -39,6 +39,9 @@ description: Quality checklist for specification artifacts
 - [ ] Risk assessment included (for architecture docs)
 - [ ] Deployment strategy defined (for architecture docs)
 - [ ] 100% story-to-task coverage (every PRD story maps to ≥1 task)
+- [ ] Six core areas covered in architecture docs (Commands, Testing, Project Structure, Code Style, Git Workflow, Boundaries)
+- [ ] Self-verification pass completed by generating agent (all spec items confirmed addressed)
+- [ ] Extended TOC present for specs exceeding 500 lines (or `spec_authoring.extended_toc_threshold`)
 
 ## Phase-Specific
 
@@ -63,6 +66,10 @@ description: Quality checklist for specification artifacts
 - [ ] Data model with entity definitions
 - [ ] API contracts specified
 - [ ] Implementation plan with task breakdown
+- [ ] Six Core Areas Coverage checklist fully checked (Commands, Testing, Project Structure, Code Style, Git Workflow, Boundaries)
+- [ ] Three-tier boundaries (Always do / Ask first / Never do) section populated
+- [ ] Extended TOC present (if document exceeds 500 lines)
+- [ ] Self-verification summary included with approval presentation
 
 ### Phase 4: Developer
 - [ ] Tests written before implementation (if TDD mandate active)

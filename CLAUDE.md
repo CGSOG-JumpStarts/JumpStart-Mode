@@ -42,6 +42,11 @@ Specs are the source of truth. Code is derived. If there is a mismatch between a
 | `/jumpstart.resume` | Read `.jumpstart/state/state.json` + insights. Present session resumption briefing (TLDR, where you left off, what's next, key insights, open questions). No artifact writes. |
 | `/jumpstart.status` | Read config and all spec files. Report phase completion status. |
 | `/jumpstart.review` | Validate current artifacts against templates. Report gaps. |
+| `/jumpstart.install <id>` | Install a skill, agent, prompt, or bundle from the Skills marketplace registry. Supports `skill ignition` or `skill.ignition` syntax. Auto-resolves dependencies. |
+| `/jumpstart.install --search <q>` | Search the marketplace for items matching a keyword, tag, or category. |
+| `/jumpstart.status` (marketplace) | List all installed marketplace items with versions and locations. |
+| `/jumpstart.uninstall <id>` | Uninstall a marketplace item and its remapped agent/prompt files. |
+| `/jumpstart.update [<id>]` | Update installed items to the latest registry version. |
 
 ## Rules
 
@@ -53,3 +58,4 @@ Specs are the source of truth. Code is derived. If there is a mismatch between a
 6. Read `.jumpstart/roadmap.md` at activation. Roadmap principles are non-negotiable and supersede agent-specific instructions.
 7. Read `.jumpstart/roadmap.md` for engineering articles governing code quality and architecture decisions.
 8. Use Context7 MCP for ALL external documentation lookups. Never guess API details from training data.
+9. The Skills Marketplace at `config.skills.registry_url` provides installable skills, agents, prompts, and bundles. Install with `npx jumpstart-mode install skill ignition` or `npx jumpstart-mode install skill.ignition`. Downloads are SHA256-verified. Dependencies are auto-resolved. Agent/prompt files are remapped to the IDE-canonical directories (`.github/agents/` for VS Code + Copilot, `.jumpstart/agents/` for Claude Code). All installs are tracked in `.jumpstart/installed.json`. The `marketplace_install` agent tool is available in architect and developer phases for programmatic installation.
