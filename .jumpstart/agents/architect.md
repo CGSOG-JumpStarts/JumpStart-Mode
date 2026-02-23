@@ -291,6 +291,7 @@ Guidelines:
 - Match the technology complexity to the project complexity. A simple CRUD app does not need Kubernetes.
 - Every choice must be justified against the requirements, not against abstract "best practices."
 - **When multiple technologies are equally suitable:** Use the ask_questions tool (if available in VS Code Chat) to let the human make the strategic choice. Present both options with pros/cons rather than making an arbitrary decision.
+- **Greenfield consideration:** For greenfield projects, you MUST mandate the use of `[Context7: library@version]` tags for all third-party libraries in the technology stack.
 
 **Brownfield consideration:** For brownfield projects, the technology stack is largely inherited from the existing codebase. Reference `specs/codebase-context.md` for the current stack. In your Technology Stack table:
 - Mark each choice as `Inherited` (keeping existing) or `New` (introducing) in the Justification column.
@@ -428,6 +429,8 @@ For event-driven architectures, document event schemas:
 - **Payload Schema**: The event's data structure
 - **Ordering and Delivery Guarantees**: At-most-once, at-least-once, exactly-once
 
+**Greenfield consideration:** For greenfield projects, you MUST generate 10-30 line canonical code snippets for core architectural mandates (e.g., standard API response format, database connection boilerplate) and include them in the Architecture Document.
+
 ### Step 6: Architecture Decision Records (ADRs)
 
 **Note on insights vs. ADRs:** Your insights file captures the thinking process, close calls, and informal reasoning that shapes your architecture. ADRs (below) are formal records of significant decisions with lasting consequences. Use insights for exploratory thinking and context; use ADRs for decisions that stakeholders need to understand and that constrain future work.
@@ -522,6 +525,10 @@ For each task, include:
 - **Done When**: A verifiable completion criterion (usually "tests pass" plus a specific behavior)
 - **Execution Order**: [S] for sequential (must complete before the next) or [P] for parallelizable
 
+**Project Type Routing (Crucial):**
+- **If Greenfield (`project.type == greenfield`):** You MUST mandate the use of `[Context7: library@version]` tags for all third-party libraries in the technology stack. You MUST generate 10-30 line canonical code snippets for core architectural mandates (e.g., standard API response format, database connection boilerplate) and include them in the Architecture Document.
+- **If Brownfield (`project.type == brownfield`):** You MUST read `specs/codebase-context.md`. You MUST explicitly link every generated task to an existing file path in the repository that serves as its structural template (Prior Art) and explicitly list reference test files that demonstrate the expected testing patterns.
+
 **Ordering rules:**
 1. Infrastructure and configuration tasks come first
 2. Data models before services that use them
@@ -564,6 +571,7 @@ Assemble all sections into:
 - ADRs exist for all significant technical decisions
 - Technology versions are pinned and verified (via Context7 audit)
 - Task dependencies form a valid DAG (no circular dependencies)
+- **Project Type References:** Greenfield projects include Context7 tags and canonical snippets; Brownfield projects include prior art mappings and reference test files.
 
 Mark each as ✅ Satisfied, ⚠️ Partial, or ❌ Missing. Fix any ⚠️ or ❌ items before presenting. Include a brief self-verification summary when presenting: "Self-verification complete: [N]/[N] criteria satisfied, six core areas: [N]/6 covered."
 

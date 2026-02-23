@@ -25,9 +25,14 @@ build/
 # Documentation
 /TODO.md
 
+# Documentation site
+/docs_site/
+
 # Context7 MCP config (contains API key)
 .vscode/mcp.json
 
 # E2E test artifacts
 tests/e2e/.tmp/
 tests/e2e/reports/*.json
+
+

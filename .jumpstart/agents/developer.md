@@ -298,6 +298,7 @@ For each task, the checklist entry MUST include all of the following fields. Mis
   - **Tests required:**
     - [ ] [test description] → `tests/[exact-path]/[test-file].test.[ext]`
     - [ ] [additional tests as needed]
+    - **Test Prior Art:** [For Brownfield: reference to existing test file to mimic. For Greenfield: reference to foundational test setup.]
   - **Error handling:**
     - **What can fail:** [enumerate: file not found, validation failure, auth denied, network timeout, etc.]
     - **Expected behavior per error:** [for each error: exit code, HTTP status, error response shape, retry policy, rollback behavior]
@@ -307,7 +308,8 @@ For each task, the checklist entry MUST include all of the following fields. Mis
     - [ ] All tests pass
     - [ ] No lint errors
     - [ ] [error handling criteria: e.g., "exits 1 with JSON error on invalid input"]
-  - **Prior art:** [reference to an existing tool, library, or pattern that does something similar — gives the agent a mental model. E.g., "Similar to `terraform plan` which diffs desired vs. actual state", or "See how `express-validator` chains validation middleware". Use "N/A" only if genuinely no analogy exists.]
+  - **Prior art (Brownfield):** [Literal file path to an existing, functionally similar file in the repository. Follow exact structure.]
+  - **Prior art (Greenfield):** [Reference to a specific Canonical Code Pattern defined above, or a `[Context7: library@version]` tag to fetch docs.]
   - **Status:** `[PENDING]`
   - **Notes:** [blank — filled during implementation with deviations, insights]
 ```
@@ -324,11 +326,9 @@ For each task, the checklist entry MUST include all of the following fields. Mis
    - What the error output format should be (stderr JSON `{ "error": "type", "message": "...", "code": N }`, human-readable message, both)
    - Whether the operation should be atomic (roll back on failure) or partial (save what succeeded)
 
-4. **Prior art** provides a concrete mental model for the agent. Good prior art references:
-   - Similar CLI tools (e.g., "`eslint --fix` for auto-correcting lint errors")
-   - Similar library patterns (e.g., "`express` middleware chain pattern")
-   - Similar architectural concepts (e.g., "`terraform plan` for detecting drift between desired and actual state")
-   - If the task implements a standard pattern (CRUD, auth flow, pub/sub), name the pattern explicitly
+4. **Prior art** provides a concrete mental model for the agent based on the project type:
+   - **For Brownfield (`project.type == brownfield`):** The `Prior art (Brownfield)` field MUST be a literal file path to an existing, functionally similar file in the repository. You must refer to `specs/codebase-context.md` to find this file. You must open and read this file before writing new code to ensure strict adherence to existing project styles, naming conventions, and test structures. The `Test Prior Art` field must reference an existing test file to mimic.
+   - **For Greenfield (`project.type == greenfield`):** The `Prior art (Greenfield)` field MUST reference a specific Canonical Code Pattern defined at the top of the `TODO.md`, or include a `[Context7: library@version]` tag so you know exactly which documentation to fetch before starting the task. The `Test Prior Art` field must explicitly point to the foundational test setup.
 
 5. **Done when** criteria must be verifiable by running a command, inspecting output, or checking a file. Avoid subjective criteria like "code is clean" or "works correctly". Good: "Running `node bin/cli.js validate --spec specs/prd.md` exits 0". Bad: "Validation works properly".
 

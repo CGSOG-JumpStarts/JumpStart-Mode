@@ -93,6 +93,28 @@
 
 ---
 
+## Reference Implementations (Golden Paths)
+
+> **Note:** This section catalogs standard implementations and reference test suites found in the existing codebase. The Architect agent will use these to map new features to existing examples.
+
+### Core Implementation Patterns
+
+| Pattern | Reference File Path | Description |
+|---------|---------------------|-------------|
+| [e.g., Standard Controller] | `[e.g., src/controllers/user.controller.ts]` | [e.g., Demonstrates standard dependency injection and JSON response formatting] |
+| [e.g., Standard Repository] | `[e.g., src/repositories/user.repository.ts]` | [e.g., Demonstrates standard database query patterns and error handling] |
+| | | |
+
+### Testing Conventions
+
+| Pattern | Reference Test File Path | Description |
+|---------|--------------------------|-------------|
+| [e.g., Controller Tests] | `[e.g., tests/controllers/user.controller.test.ts]` | [e.g., Demonstrates standard mocking and fixture setup for controllers] |
+| [e.g., Integration Tests] | `[e.g., tests/integration/api.test.ts]` | [e.g., Demonstrates standard database setup and teardown for integration tests] |
+| | | |
+
+---
+
 ## C4 Architecture Diagrams
 
 ### System Context (Level 1)

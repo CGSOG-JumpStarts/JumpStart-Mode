@@ -75,6 +75,7 @@
 > Reference implementations for every architectural mandate that affects code structure.
 > These remove ambiguity about how abstract principles translate to concrete code.
 > Agents MUST follow these patterns rather than inventing alternatives.
+> **Greenfield Rule:** If a structural mandate lacks a code snippet from the Architect in Greenfield mode, the Developer must halt and throw a `[NEEDS CLARIFICATION]` error. Derivation is strictly forbidden.
 
 ### Pattern: [e.g., CLI I/O Contract]
 
@@ -220,7 +221,7 @@ describe('validateSpec', () => {
     - [Additional AC if multiple]
   - **Tests required:**
     - [ ] [test description] → `tests/[exact-path]/[test-file].test.[ext]`
-    - [ ] [additional test] → `tests/[exact-path]/[test-file].test.[ext]`
+    - **Test Prior Art:** [For Brownfield: reference to existing test file to mimic. For Greenfield: reference to foundational test setup.]
   - **Error handling:**
     - **What can fail:** [enumerate: file not found, validation failure, auth denied, network timeout, etc.]
     - **Expected behavior per error:**
@@ -232,7 +233,8 @@ describe('validateSpec', () => {
     - [ ] [e.g., "Running `node bin/cli.js validate --spec specs/prd.md` exits 0"]
     - [ ] All tests pass
     - [ ] No lint errors
-  - **Prior art:** [reference to existing tool/pattern, e.g., "Similar to `terraform plan` for diffing desired vs. actual state" or "Follows `express-validator` middleware chain pattern". Use "N/A" only if genuinely no analogy exists.]
+  - **Prior art (Brownfield):** [Literal file path to an existing, functionally similar file in the repository. Follow exact structure.]
+  - **Prior art (Greenfield):** [Reference to a specific Canonical Code Pattern defined above, or a `[Context7: library@version]` tag to fetch docs.]
   - **Status:** `[PENDING]`
   - **Notes:** [blank — filled during implementation]
 

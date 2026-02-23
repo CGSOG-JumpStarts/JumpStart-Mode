@@ -77,6 +77,19 @@
                   "type": "string",
                   "enum": ["Not Started", "In Progress", "Complete", "Blocked"],
                   "default": "Not Started"
+                },
+                "prior_art_reference": {
+                  "type": "string",
+                  "description": "(Brownfield) File path to an existing example in the codebase."
+                },
+                "reference_test_file": {
+                  "type": "string",
+                  "description": "(Brownfield) File path to an existing test file to mimic."
+                },
+                "context7_references": {
+                  "type": "array",
+                  "items": { "type": "string" },
+                  "description": "(Greenfield) Context7 tags for third-party libraries."
                 }
               }
             }

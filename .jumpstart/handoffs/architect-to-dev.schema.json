@@ -3,8 +3,13 @@
   "title": "Architect to Developer Handoff Schema",
   "description": "Validates the technical blueprint payload from Phase 3 (Architect) to Phase 4 (Developer). Ensures all implementation context is present.",
   "type": "object",
-  "required": ["technology_stack", "components", "data_model", "task_list", "deployment_strategy"],
+  "required": ["project_type", "technology_stack", "components", "data_model", "task_list", "deployment_strategy"],
   "properties": {
+    "project_type": {
+      "type": "string",
+      "enum": ["greenfield", "brownfield"],
+      "description": "The type of project, determining which reference materials are required."
+    },
     "technology_stack": {
       "type": "object",
       "description": "Selected technology stack with justifications",
@@ -166,7 +171,64 @@
         "ci_cd": { "type": "string" },
         "containers": { "type": "boolean" }
       }
+    },
+    "reference_material": {
+      "type": "object",
+      "description": "Contextual code and documentation references tailored to the project type.",
+      "properties": {
+        "internal_prior_art": {
+          "type": "array",
+          "description": "(Brownfield) Paths to existing files in the repo that serve as a structural template.",
+          "items": {
+            "type": "object",
+            "properties": {
+              "file_path": { "type": "string" },
+              "pattern_demonstrated": { "type": "string" }
+            }
+          }
+        },
+        "canonical_snippets": {
+          "type": "array",
+          "description": "(Greenfield) Architect-defined code snippets establishing the baseline patterns.",
+          "items": {
+            "type": "object",
+            "properties": {
+              "title": { "type": "string" },
+              "code": { "type": "string" },
+              "anti_pattern": { "type": "string" }
+            }
+          }
+        }
+      }
     }
   },
+  "allOf": [
+    {
+      "if": {
+        "properties": { "project_type": { "const": "greenfield" } }
+      },
+      "then": {
+        "required": ["reference_material"],
+        "properties": {
+          "reference_material": {
+            "required": ["canonical_snippets"]
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": { "project_type": { "const": "brownfield" } }
+      },
+      "then": {
+        "required": ["reference_material"],
+        "properties": {
+          "reference_material": {
+            "required": ["internal_prior_art"]
+          }
+        }
+      }
+    }
+  ],
   "additionalProperties": false
 }
