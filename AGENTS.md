@@ -263,6 +263,30 @@ The master catalog at `registry/index.json` contains all item metadata:
 - `compatibility` — Version ranges and tool requirements
 - `includes` — (bundles only) Member item IDs
 
+#### Skill Discovery & Integration
+
+When skills are installed or uninstalled, the framework automatically regenerates integration files so that **all agents** become aware of installed skills without manual configuration.
+
+**Auto-generated files:**
+
+| File | Purpose | Audience |
+| --- | --- | --- |
+| `.github/instructions/skills.instructions.md` | IDE-level `applyTo: '**'` instructions injected into all Copilot agent conversations | All `@Jump Start: *` agents via Copilot |
+| `.jumpstart/skills/skill-index.md` | Framework-level structured catalog with triggers, keywords, and bundled agent metadata | Agent personas (protocol step) |
+| `.jumpstart/integration-log.json` | Tracks all generated files per skill for clean reversal on uninstall | Framework internals |
+
+**How it works:**
+
+1. **On install:** After `recordInstall()`, the integration engine scans all installed skills, parses each `SKILL.md` frontmatter (name, description, triggers, keywords), and regenerates both integration files.
+2. **On uninstall:** After removing the skill's files and ledger entry, the integration engine regenerates integration files without the removed skill.
+3. **Manual rebuild:** `npx jumpstart-mode integrate` regenerates all integration files from scratch.
+4. **Clean:** `npx jumpstart-mode integrate --clean` removes all generated integration files.
+5. **Status:** `npx jumpstart-mode integrate --status` shows the current integration state.
+
+**Agent protocol step:** Every agent persona (phase and advisory) includes a `### Skill Discovery` step in its `## Input Context` section:
+
+> If `skills.enabled` is `true` in `.jumpstart/config.yaml`, check `.jumpstart/skills/skill-index.md` for installed skills. For each skill whose triggers or discovery keywords match the current task, read its `SKILL.md` entry file and follow its domain-specific workflow. If the skill includes bundled agents, invoke them as appropriate.
+
 ---
 
 ## Troubleshooting

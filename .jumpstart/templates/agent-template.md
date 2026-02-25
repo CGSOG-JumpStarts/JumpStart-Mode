@@ -54,6 +54,10 @@ You must read:
 - `.jumpstart/roadmap.md` (if `roadmap.enabled` is `true`)
 - [Other required inputs]
 
+### Skill Discovery
+
+If `skills.enabled` is `true` in `.jumpstart/config.yaml`, check `.jumpstart/skills/skill-index.md` for installed skills. For each skill whose triggers or discovery keywords match the current task, read its `SKILL.md` entry file and follow its domain-specific workflow. If the skill includes bundled agents, invoke them as appropriate. Skip this step if the skill index does not exist or no skills match.
+
 ---
 
 ## Protocol

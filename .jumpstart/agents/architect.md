@@ -61,6 +61,10 @@ Before writing anything, internalise:
 - Constraints from Phase 0 (technology mandates, timeline, team size)
 - The prioritised milestone structure from Phase 2
 
+### Skill Discovery
+
+If `skills.enabled` is `true` in `.jumpstart/config.yaml`, check `.jumpstart/skills/skill-index.md` for installed skills. For each skill whose triggers or discovery keywords match the current task, read its `SKILL.md` entry file and follow its domain-specific workflow. If the skill includes bundled agents, invoke them as appropriate. Skip this step if the skill index does not exist or no skills match.
+
 ---
 
 ## VS Code Chat Tools
@@ -571,6 +575,9 @@ Assemble all sections into:
 - ADRs exist for all significant technical decisions
 - Technology versions are pinned and verified (via Context7 audit)
 - Task dependencies form a valid DAG (no circular dependencies)
+- **Traceability coverage:** End-to-end traceability matrix (`specs/traceability.md`, template: `.jumpstart/templates/traceability.md`) is complete when the project has 3+ epics or the domain complexity is `high`
+- **Constraint mapping:** NFR-to-architecture constraint map (`specs/constraint-map.md`, template: `.jumpstart/templates/constraint-map.md`) is complete when the project has 5+ NFRs or domain complexity is `medium`+
+- **Task dependency audit:** Task dependency graph (`specs/task-dependencies.md`, template: `.jumpstart/templates/task-dependencies.md`) is complete when there are 20+ tasks or complex dependency chains
 - **Project Type References:** Greenfield projects include Context7 tags and canonical snippets; Brownfield projects include prior art mappings and reference test files.
 
 Mark each as ✅ Satisfied, ⚠️ Partial, or ❌ Missing. Fix any ⚠️ or ❌ items before presenting. Include a brief self-verification summary when presenting: "Self-verification complete: [N]/[N] criteria satisfied, six core areas: [N]/6 covered."
@@ -738,6 +745,12 @@ Primary outputs:
 - `specs/implementation-plan.md` (populated from template)
 - `specs/insights/architecture-insights.md` (living insights document capturing technical decision rationale, pattern selections, risk assessments, and close-call reasoning)
 - `specs/insights/implementation-plan-insights.md` (create this for the Developer agent to use; seed it with any architectural concerns or watch-items for implementation)
+
+Conditional outputs (produced when triggered by project complexity):
+- `specs/constraint-map.md` — populated using `.jumpstart/templates/constraint-map.md`. Produced during Step 8 (Implementation Plan Generation) to map every NFR to the architecture components that address it and the implementation tasks that deliver it. Recommended when the project has 5+ NFRs or the domain complexity is `medium` or `high`.
+- `specs/task-dependencies.md` — populated using `.jumpstart/templates/task-dependencies.md`. Produced as a companion to `implementation-plan.md` when the task count exceeds 20 or circular/complex dependency chains are detected. Contains the dependency audit, recommended build order, dependency graph (Mermaid), critical path, and parallelizable groups.
+- `specs/tasks.md` — populated using `.jumpstart/templates/tasks.md`. Produced when `implementation_plan_style` is `task` and individual task cards with detailed story mapping, Gherkin acceptance criteria, and file lists would exceed the implementation plan's readable length. Serves as a detailed companion to the implementation plan.
+- `specs/traceability.md` — populated using `.jumpstart/templates/traceability.md`. Produced during Step 9 (Compile and Present) as the end-to-end traceability matrix from Validation Criterion → Capability → Story → Task → Test. Mandatory when the project has 3+ epics or the domain complexity is `high`.
 
 Secondary outputs:
 - `specs/decisions/NNN-*.md` (one ADR per significant decision)

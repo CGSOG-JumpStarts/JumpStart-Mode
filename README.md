@@ -352,27 +352,97 @@ Create new skills using the built-in skill-creator, or install them from the mar
 
 #### Marketplace
 
-Install skills, agents, prompts, and bundles from the [Skills Marketplace](https://raw.githubusercontent.com/CGSOG-JumpStarts/JumpStart-Skills/main/registry/index.json):
+Install skills, agents, prompts, and bundles from the [JumpStart Skills Marketplace](https://github.com/CGSOG-JumpStarts/JumpStart-Skills):
 
 ```bash
-# Install by type + name
+# Install by dotted ID
+npx jumpstart-mode install skill.mermaid-design
+
+# Install by type + name (space-separated)
 npx jumpstart-mode install skill ignition
 
-# Install by dotted ID
-npx jumpstart-mode install skill.ignition
+# Install by bare name (auto-resolves type)
+npx jumpstart-mode install ignition
 
-# Search
-npx jumpstart-mode install --search pptx
+# Install a bundle (all members + dependencies)
+npx jumpstart-mode install bundle.ignition-suite
+
+# Search the marketplace
+npx jumpstart-mode install --search mermaid
 
 # Check installed items
 npx jumpstart-mode status
 
-# Update / uninstall
+# Update all / specific item
 npx jumpstart-mode update
-npx jumpstart-mode uninstall skill.ignition
+npx jumpstart-mode update skill.ignition
+
+# Uninstall
+npx jumpstart-mode uninstall skill.mermaid-design
+
+# Advanced flags
+npx jumpstart-mode install skill.ignition --force      # Re-install even if present
+npx jumpstart-mode install skill.ignition --dry-run     # Preview without downloading
+npx jumpstart-mode install skill.ignition --registry <url>  # Custom registry URL
 ```
 
-The installer auto-detects your IDE and remaps agent/prompt files to the right directories (`.github/agents/` for VS Code + Copilot, `.jumpstart/agents/` for Claude Code). Dependencies are resolved automatically, downloads are SHA256-verified, and all installs are tracked in `.jumpstart/installed.json`. Agents in architect and developer phases can also install items programmatically via the `marketplace_install` tool.
+| Item Type | Entry File | Default Install Path | Description |
+| --- | --- | --- | --- |
+| `skill` | `SKILL.md` | `.jumpstart/skills/<name>/` | Domain knowledge packages — may contain agents, prompts, scripts |
+| `agent` | `*.agent.md` | `.jumpstart/agents/<name>/` | Single-purpose agent persona |
+| `prompt` | `*.prompt.md` | `.jumpstart/prompts/<name>/` | Reusable prompt template |
+| `bundle` | `bundle.json` | *(composite)* | Installs multiple items together |
+
+**How it works:**
+
+1. **Registry fetch** — Downloads the master catalog from `.jumpstart/config.yaml` → `skills.registry_url` (or pass `--registry <url>`).
+2. **Dependency resolution** — Reads `dependencies[]` from each item and installs them in topological order. Already-installed items are skipped.
+3. **Download & verify** — Fetches the zip artifact and verifies the SHA256 checksum against the registry manifest.
+4. **IDE-aware file remapping** — Auto-detects the IDE environment:
+   - **VS Code + Copilot** (`.github/` exists): agents → `.github/agents/`, prompts → `.github/prompts/`
+   - **Claude Code / generic**: agents → `.jumpstart/agents/`, prompts → `.jumpstart/prompts/`
+5. **Install tracking** — Records the install in `.jumpstart/installed.json` (item ID, version, target paths, remapped files, timestamp).
+
+**Private / local registries:** Point `--registry` at any HTTP server hosting a compatible `index.json`. For private repos, the download URLs inside `registry/index.json` point to `raw.githubusercontent.com` (returns 404). Create a rewritten index:
+```bash
+# In JumpStart-Skills repo root
+npx http-server . -p 9876 --cors
+sed 's|https://raw.githubusercontent.com/CGSOG-JumpStarts/JumpStart-Skills/main/|http://127.0.0.1:9876/|g' \
+  registry/index.json > local-index.json
+
+# In your project
+npx jumpstart-mode install skill.mermaid-design --registry http://127.0.0.1:9876/local-index.json
+```
+Once the Skills repo is public, the standard install works directly with no flags.
+
+**Uninstall behavior:** `npx jumpstart-mode uninstall <id>` removes the installed directory, any IDE-remapped agent/prompt files, and the tracking entry from `.jumpstart/installed.json`.
+
+#### Skill Integration
+
+When skills are installed or uninstalled, the framework automatically regenerates integration files so all Jump Start agents become aware of available skills:
+
+```bash
+# Manual rebuild (runs automatically on install/uninstall)
+npx jumpstart-mode integrate
+
+# Remove all integration files
+npx jumpstart-mode integrate --clean
+
+# Show integration state
+npx jumpstart-mode integrate --status
+```
+
+**Auto-generated files:**
+
+| File | Purpose |
+| --- | --- |
+| `.github/instructions/skills.instructions.md` | IDE-level `applyTo: '**'` instructions — Copilot injects this into all agent conversations |
+| `.jumpstart/skills/skill-index.md` | Framework-level catalog with triggers, keywords, and bundled agent metadata |
+| `.jumpstart/integration-log.json` | Tracks generated files per skill for clean reversal on uninstall |
+
+Every agent persona includes a **Skill Discovery** protocol step that reads the skill index at startup, matches the user's request against trigger keywords, and loads matching `SKILL.md` files for domain-specific workflows.
+
+Agents in architect and developer phases can also install items programmatically via the `marketplace_install` tool.
 
 ### Modules
 

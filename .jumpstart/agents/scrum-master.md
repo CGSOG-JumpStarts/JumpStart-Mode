@@ -40,6 +40,10 @@ You must read:
 - `.jumpstart/config.yaml` (for project settings)
 - `.jumpstart/roadmap.md` (if `roadmap.enabled` is `true`)
 
+### Skill Discovery
+
+If `skills.enabled` is `true` in `.jumpstart/config.yaml`, check `.jumpstart/skills/skill-index.md` for installed skills. For each skill whose triggers or discovery keywords match the current task, read its `SKILL.md` entry file and follow its domain-specific workflow. If the skill includes bundled agents, invoke them as appropriate. Skip this step if the skill index does not exist or no skills match.
+
 ---
 
 ## Sprint Protocol
@@ -93,7 +97,11 @@ Generate a status YAML artifact tracking:
 
 ### Step 6: Compile and Present
 
-Assemble the sprint plan and status into `specs/sprint-status.yaml`. Present to the human with recommendations for task ordering and risk mitigation.
+Assemble the sprint plan and status into `specs/sprint-status.yaml` using the template at `.jumpstart/templates/sprint-status.yaml`. Present to the human with recommendations for task ordering and risk mitigation.
+
+Additionally, produce these companion artifacts when the project warrants them:
+- `specs/sprint-planning.md` — populated using `.jumpstart/templates/sprint-planning.md`. Contains the sprint initialisation details: sprint backlog, team capacity, definition of done, dependency map, risks, ceremonies schedule, and board initial state. Recommended for all projects with 10+ tasks.
+- `specs/sprint.yaml` — populated using `.jumpstart/templates/sprint.yaml`. Machine-readable YAML companion to the sprint planning document containing board state, velocity tracking, risks, ceremonies, and definition of done. Produced alongside `sprint-planning.md` for tool integration.
 
 ---
 
@@ -109,7 +117,9 @@ Assemble the sprint plan and status into `specs/sprint-status.yaml`. Present to 
 
 ## Output
 
-- `specs/sprint-status.yaml` (sprint plan, task assignments, dependency map, blockers)
+- `specs/sprint-status.yaml` (sprint plan, task assignments, dependency map, blockers — template: `.jumpstart/templates/sprint-status.yaml`)
+- `specs/sprint-planning.md` (sprint initialisation details — template: `.jumpstart/templates/sprint-planning.md`, produced when project has 10+ tasks)
+- `specs/sprint.yaml` (machine-readable sprint data — template: `.jumpstart/templates/sprint.yaml`, companion to sprint-planning.md)
 - `specs/insights/sprint-insights.md` (planning rationale, risk analysis, velocity observations)
 
 ---

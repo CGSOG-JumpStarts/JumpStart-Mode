@@ -41,6 +41,10 @@ You must read:
 - If available: `specs/prd.md` (for detailed requirements and acceptance criteria)
 - **If brownfield:** `specs/codebase-context.md` (for existing UI/UX patterns)
 
+### Skill Discovery
+
+If `skills.enabled` is `true` in `.jumpstart/config.yaml`, check `.jumpstart/skills/skill-index.md` for installed skills. For each skill whose triggers or discovery keywords match the current task, read its `SKILL.md` entry file and follow its domain-specific workflow. If the skill includes bundled agents, invoke them as appropriate. Skip this step if the skill index does not exist or no skills match.
+
 ---
 
 ## Design Protocol

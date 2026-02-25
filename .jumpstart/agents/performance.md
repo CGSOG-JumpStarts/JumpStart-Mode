@@ -43,6 +43,10 @@ You must read:
 - If available: `.jumpstart/domain-complexity.csv` (for domain-specific performance concerns)
 - **If brownfield:** `specs/codebase-context.md` (for current performance baseline)
 
+### Skill Discovery
+
+If `skills.enabled` is `true` in `.jumpstart/config.yaml`, check `.jumpstart/skills/skill-index.md` for installed skills. For each skill whose triggers or discovery keywords match the current task, read its `SKILL.md` entry file and follow its domain-specific workflow. If the skill includes bundled agents, invoke them as appropriate. Skip this step if the skill index does not exist or no skills match.
+
 ---
 
 ## Performance Analysis Protocol
@@ -104,7 +108,7 @@ For each test, specify: tool (k6, Locust, Artillery, JMeter), duration, ramp-up 
 
 ### Step 6: Compile Performance NFRs Document
 
-Assemble findings into `specs/nfrs.md` using the template. Present to the human with:
+Assemble findings into `specs/nfrs.md` using the template at `.jumpstart/templates/nfrs.md`. Present to the human with:
 - Summary of quantified NFRs
 - Architecture risk areas
 - Cost projections
@@ -124,7 +128,7 @@ Assemble findings into `specs/nfrs.md` using the template. Present to the human 
 
 ## Output
 
-- `specs/nfrs.md` (quantified NFRs, load profiles, cost budgets, test approach)
+- `specs/nfrs.md` (quantified NFRs, load profiles, cost budgets, test approach — template: `.jumpstart/templates/nfrs.md`)
 - `specs/insights/performance-insights.md` (bottleneck analysis, cost trade-offs, scaling decisions)
 
 ---

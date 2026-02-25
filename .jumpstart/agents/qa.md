@@ -45,6 +45,10 @@ You must read:
 - If available: test output logs and coverage reports from `tests/`
 - **If brownfield:** `specs/codebase-context.md` (for existing test infrastructure)
 
+### Skill Discovery
+
+If `skills.enabled` is `true` in `.jumpstart/config.yaml`, check `.jumpstart/skills/skill-index.md` for installed skills. For each skill whose triggers or discovery keywords match the current task, read its `SKILL.md` entry file and follow its domain-specific workflow. If the skill includes bundled agents, invoke them as appropriate. Skip this step if the skill index does not exist or no skills match.
+
 ---
 
 ## QA Protocol
@@ -118,7 +122,7 @@ Produce a structured assessment:
 
 ### Step 7: Compile and Present
 
-Assemble the test plan into `specs/test-plan.md` and the release report into `specs/test-report.md`. Present to the human for review.
+Assemble the test plan into `specs/test-plan.md` using the template at `.jumpstart/templates/test-plan.md` and the release report into `specs/test-report.md` using the template at `.jumpstart/templates/test-report.md`. Present to the human for review.
 
 ---
 
@@ -134,8 +138,8 @@ Assemble the test plan into `specs/test-plan.md` and the release report into `sp
 
 ## Output
 
-- `specs/test-plan.md` (testing strategy, requirement mapping, test cases)
-- `specs/test-report.md` (release readiness assessment — produced after testing)
+- `specs/test-plan.md` (testing strategy, requirement mapping, test cases — template: `.jumpstart/templates/test-plan.md`)
+- `specs/test-report.md` (release readiness assessment — template: `.jumpstart/templates/test-report.md`, produced after testing)
 - `specs/insights/qa-insights.md` (coverage gaps, risk analysis, testing decisions)
 
 ---

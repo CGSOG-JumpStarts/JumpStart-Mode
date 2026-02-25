@@ -18,6 +18,10 @@ Before running verification:
 2. Identify the scan directories from `diagram_verification.scan_dirs` (default: `["specs"]`).
 3. If `strict_c4_semantics` is `true`, apply strict C4 validation rules (see below).
 
+### Skill Discovery
+
+If `skills.enabled` is `true` in `.jumpstart/config.yaml`, check `.jumpstart/skills/skill-index.md` for installed skills. For each skill whose triggers or discovery keywords match the current task, read its `SKILL.md` entry file and follow its domain-specific workflow. If the skill includes bundled agents, invoke them as appropriate. Skip this step if the skill index does not exist or no skills match.
+
 ---
 
 ## Verification Protocol

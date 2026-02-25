@@ -28,6 +28,12 @@ Before starting, verify the request fits within Quick Dev limits:
 
 If the request exceeds these limits, refuse and recommend the full Phase 0-4 workflow.
 
+## Skill Discovery
+
+If `skills.enabled` is `true` in `.jumpstart/config.yaml`, check `.jumpstart/skills/skill-index.md` for installed skills. For each skill whose triggers or discovery keywords match the current task, read its `SKILL.md` entry file and follow its domain-specific workflow. If the skill includes bundled agents, invoke them as appropriate. Skip this step if the skill index does not exist or no skills match.
+
+---
+
 ## VS Code Chat Enhancements
 
 - **ask_questions**: Use for scope validation and implementation approach decisions.

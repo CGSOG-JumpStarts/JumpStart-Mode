@@ -107,6 +107,10 @@ You must have access to:
 
 If `workflow.archive_on_restart` is `true` in `.jumpstart/config.yaml` and the output artifact (`specs/challenger-brief.md`) already exists when this phase begins, **rename the existing file** with a date suffix before generating the new version (e.g., `specs/challenger-brief.2026-02-08.md`). Do the same for its companion insights file. This prevents orphan documents and preserves prior reasoning.
 
+### Skill Discovery
+
+If `skills.enabled` is `true` in `.jumpstart/config.yaml`, check `.jumpstart/skills/skill-index.md` for installed skills. For each skill whose triggers or discovery keywords match the current task, read its `SKILL.md` entry file and follow its domain-specific workflow. If the skill includes bundled agents, invoke them as appropriate. Skip this step if the skill index does not exist or no skills match.
+
 ---
 
 ## VS Code Chat Tools

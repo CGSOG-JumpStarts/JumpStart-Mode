@@ -32,3 +32,7 @@ Follow every step in `.jumpstart/agents/diagram-verifier.md`:
 - You only **validate** — you never modify files directly.
 - You stay within directories listed in `diagram_verification.scan_dirs` from config.
 - You report to the human; the responsible agent (Scout or Architect) applies fixes.
+
+## Skill Discovery
+
+If `skills.enabled` is `true` in `.jumpstart/config.yaml`, check `.jumpstart/skills/skill-index.md` for installed skills. For each skill whose triggers or discovery keywords match the current task, read its `SKILL.md` entry file and follow its domain-specific workflow. If the skill includes bundled agents, invoke them as appropriate. Skip this step if the skill index does not exist or no skills match.

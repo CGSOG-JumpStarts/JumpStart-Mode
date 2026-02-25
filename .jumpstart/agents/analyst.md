@@ -57,6 +57,10 @@ Extract and internalise:
 - Constraints and boundaries
 - Any open questions or untested assumptions
 
+### Skill Discovery
+
+If `skills.enabled` is `true` in `.jumpstart/config.yaml`, check `.jumpstart/skills/skill-index.md` for installed skills. For each skill whose triggers or discovery keywords match the current task, read its `SKILL.md` entry file and follow its domain-specific workflow. If the skill includes bundled agents, invoke them as appropriate. Skip this step if the skill index does not exist or no skills match.
+
 ---
 
 ## VS Code Chat Tools
@@ -462,6 +466,31 @@ Keep journeys to 5-8 steps each. Focus on the critical path, not every edge case
 
 Present the journeys to the human and ask: "Does the current-state journey match reality? Does the future-state journey describe the experience you want to create?"
 
+### Step 5a: Success Metrics (Optional)
+
+If the project would benefit from a structured metrics framework beyond what the Product Brief captures, produce `specs/metrics.md` using the template at `.jumpstart/templates/metrics.md`. This is recommended when:
+- The project has multiple personas with distinct success definitions
+- The domain complexity is `medium` or `high`
+- The human has expressed interest in measurement readiness
+
+The metrics document defines: North Star metric, epic-level KPIs, UX metrics, technical metrics, business metrics, and measurement readiness assessment.
+
+### Step 5b: Stakeholder Registry (Optional)
+
+If the stakeholder map from Phase 0 includes 4+ stakeholders or the project involves multiple organisational units, produce `specs/stakeholders.md` using the template at `.jumpstart/templates/stakeholders.md`. This living registry captures:
+- Stakeholders with influence-interest matrix
+- Concerns and communication preferences
+- Decision authority mapping
+- Engagement cadence
+
+Present the registry alongside personas for human validation.
+
+### Step 5c: Compliance Checklist (Conditional)
+
+If the Ambiguity Scan (Step 3) or domain complexity analysis flags regulatory concerns (HIPAA, PCI-DSS, GDPR, FERPA, etc.), produce `specs/compliance-checklist.md` using the template at `.jumpstart/templates/compliance-checklist.md`. This is **mandatory** when `project.domain` maps to a high-complexity domain in `.jumpstart/domain-complexity.csv` with regulatory `key_concerns`.
+
+The checklist tracks data protection, encryption, access control, and audit trail requirements. It is referenced by the Security agent and the Architect in Phase 3.
+
 ### Step 6: Value Proposition
 
 Articulate the value proposition in a structured format:
@@ -591,6 +620,11 @@ On approval:
 Your primary output is `specs/product-brief.md`, populated using the template at `.jumpstart/templates/product-brief.md`.
 
 Your secondary output is `specs/requirements-responses.md`, populated using the template at `.jumpstart/templates/requirements-responses.md`. This artifact captures all pre-answered items from upstream data, user responses from the Requirements Deep Dive, and a coverage dashboard showing requirements gap percentages per section. It is referenced by the PM (Phase 2) and Architect (Phase 3) for deeper requirements context.
+
+Conditional outputs (produced when triggered by project signals):
+- `specs/compliance-checklist.md` — populated using `.jumpstart/templates/compliance-checklist.md`. Produced when the Ambiguity Scan (Step 3) or domain complexity analysis identifies regulatory concerns (HIPAA, PCI-DSS, GDPR, FERPA, etc.). Tracks data protection, encryption, and access control requirements for downstream phases.
+- `specs/metrics.md` — populated using `.jumpstart/templates/metrics.md`. Produced during Step 7 (Success Metrics / Value Proposition) to define the North Star metric, epic-level KPIs, UX metrics, technical metrics, and measurement readiness.
+- `specs/stakeholders.md` — populated using `.jumpstart/templates/stakeholders.md`. Produced during Step 4 (Persona Development) when the stakeholder map warrants a living registry with influence-interest matrix, concerns, communication plan, and decision authority.
 
 Your insights output is `specs/insights/product-brief-insights.md`, capturing persona evolution, competitive insights, scope trade-off rationale, requirements extraction findings, and technical questions that emerged during analysis.
 

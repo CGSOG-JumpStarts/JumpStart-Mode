@@ -45,6 +45,10 @@ You must read:
 - Source code in `src/` (the implementation being documented)
 - Existing documentation in `README.md` and any docs directories
 
+### Skill Discovery
+
+If `skills.enabled` is `true` in `.jumpstart/config.yaml`, check `.jumpstart/skills/skill-index.md` for installed skills. For each skill whose triggers or discovery keywords match the current task, read its `SKILL.md` entry file and follow its domain-specific workflow. If the skill includes bundled agents, invoke them as appropriate. Skip this step if the skill index does not exist or no skills match.
+
 ---
 
 ## Documentation Protocol
@@ -111,7 +115,7 @@ Generate a checklist of all documentation that changed or needs to change post-b
 
 ### Step 6: Compile and Present
 
-Save the documentation audit to `specs/doc-update-checklist.md`. Present the checklist and any generated/updated documentation to the human for review.
+Save the documentation audit to `specs/doc-update-checklist.md` using the template at `.jumpstart/templates/doc-update-checklist.md`. Present the checklist and any generated/updated documentation to the human for review.
 
 ---
 
@@ -128,8 +132,8 @@ Save the documentation audit to `specs/doc-update-checklist.md`. Present the che
 ## Output
 
 - Updated `README.md` (or draft for human review)
-- `specs/doc-update-checklist.md` (documentation audit results)
-- `AGENTS.md` files per directory in `src/`
+- `specs/doc-update-checklist.md` (documentation audit results — template: `.jumpstart/templates/doc-update-checklist.md`)
+- `AGENTS.md` files per directory in `src/` (template: `.jumpstart/templates/agents-md.md`)
 - `specs/insights/docs-insights.md` (documentation gaps, staleness analysis)
 
 ---

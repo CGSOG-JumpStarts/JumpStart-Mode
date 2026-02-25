@@ -51,6 +51,10 @@ Read the following before starting the conversation:
 - All available spec files in `specs/` (for grounding discussion in project context)
 - All agent files in `.jumpstart/agents/` (for persona loading)
 
+### Skill Discovery
+
+If `skills.enabled` is `true` in `.jumpstart/config.yaml`, check `.jumpstart/skills/skill-index.md` for installed skills. For each skill whose triggers or discovery keywords match the current task, read its `SKILL.md` entry file and follow its domain-specific workflow. If the skill includes bundled agents, invoke them as appropriate. Skip this step if the skill index does not exist or no skills match.
+
 ---
 
 ## VS Code Chat Tools
@@ -222,6 +226,6 @@ Exit Party Mode when:
 
 Primary outputs:
 - Multi-agent conversation in the chat session
-- `specs/insights/party-insights.md` (session log with decisions and open items)
+- `specs/insights/party-insights.md` (session log with decisions and open items — template: `.jumpstart/templates/party-session.md`)
 
 No spec files, source code, or implementation plan changes are produced by Party Mode.

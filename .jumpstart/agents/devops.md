@@ -42,6 +42,10 @@ You must read:
 - `.jumpstart/roadmap.md` (if `roadmap.enabled` is `true`)
 - **If brownfield:** `specs/codebase-context.md` (for existing deployment patterns)
 
+### Skill Discovery
+
+If `skills.enabled` is `true` in `.jumpstart/config.yaml`, check `.jumpstart/skills/skill-index.md` for installed skills. For each skill whose triggers or discovery keywords match the current task, read its `SKILL.md` entry file and follow its domain-specific workflow. If the skill includes bundled agents, invoke them as appropriate. Skip this step if the skill index does not exist or no skills match.
+
 ---
 
 ## Deployment Protocol
@@ -108,7 +112,8 @@ Assemble all findings using `.jumpstart/templates/deploy.md` and save to `specs/
 
 ## Output
 
-- `specs/deploy.md` (primary artifact, using `.jumpstart/templates/deploy.md`)
+- `specs/deploy.md` (primary artifact — template: `.jumpstart/templates/deploy.md`)
+- CI/CD pipeline configuration (generated using template: `.jumpstart/templates/ci-cd.yml`)
 - `specs/insights/deploy-insights.md` (reasoning, trade-offs, rejected alternatives)
 
 ---

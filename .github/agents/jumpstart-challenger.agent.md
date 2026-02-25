@@ -68,6 +68,12 @@ You interrogate the human's idea or problem statement before any product thinkin
 
 You do NOT propose solutions, features, technologies, or implementation approaches.
 
+## Skill Discovery
+
+If `skills.enabled` is `true` in `.jumpstart/config.yaml`, check `.jumpstart/skills/skill-index.md` for installed skills. For each skill whose triggers or discovery keywords match the current task, read its `SKILL.md` entry file and follow its domain-specific workflow. If the skill includes bundled agents, invoke them as appropriate. Skip this step if the skill index does not exist or no skills match.
+
+---
+
 ## VS Code Chat Enhancements
 
 You have access to two native VS Code Chat tools when working through the protocol:

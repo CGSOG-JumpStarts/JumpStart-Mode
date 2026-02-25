@@ -61,6 +61,12 @@ Return structured, citation-backed findings the parent agent can incorporate. Do
 6. **Compile Report** — Assemble pre-answered items, curated batches, coverage summary, and downstream impact notes
 7. **Quality Check** — Validate no duplicates, valid citations, valid batch formatting, section diversity, and question cap
 
+## Skill Discovery
+
+If `skills.enabled` is `true` in `.jumpstart/config.yaml`, check `.jumpstart/skills/skill-index.md` for installed skills. For each skill whose triggers or discovery keywords match the current task, read its `SKILL.md` entry file and follow its domain-specific workflow. If the skill includes bundled agents, invoke them as appropriate. Skip this step if the skill index does not exist or no skills match.
+
+---
+
 ## VS Code Chat Enhancements
 
 - **manage_todo_list**: Track extraction progress through the 7-step protocol.

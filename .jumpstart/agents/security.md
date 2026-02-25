@@ -44,6 +44,10 @@ You must read:
 - If available: `specs/implementation-plan.md` (for security-relevant task coverage)
 - **If brownfield:** `specs/codebase-context.md` (for existing security controls)
 
+### Skill Discovery
+
+If `skills.enabled` is `true` in `.jumpstart/config.yaml`, check `.jumpstart/skills/skill-index.md` for installed skills. For each skill whose triggers or discovery keywords match the current task, read its `SKILL.md` entry file and follow its domain-specific workflow. If the skill includes bundled agents, invoke them as appropriate. Skip this step if the skill index does not exist or no skills match.
+
 ---
 
 ## Security Review Protocol
@@ -110,7 +114,7 @@ For each identified risk, provide:
 
 ### Step 6: Compile Security Review
 
-Assemble findings into `specs/security-review.md` using the template. Present to the human with a summary:
+Assemble findings into `specs/security-review.md` using the template at `.jumpstart/templates/security-review.md`. Present to the human with a summary:
 - Total findings by severity
 - Top 3 critical risks requiring immediate attention
 - Overall security posture assessment: **ACCEPTABLE / NEEDS WORK / UNACCEPTABLE**
@@ -129,7 +133,7 @@ Assemble findings into `specs/security-review.md` using the template. Present to
 
 ## Output
 
-- `specs/security-review.md` (threat model, OWASP audit, findings, recommendations)
+- `specs/security-review.md` (threat model, OWASP audit, findings, recommendations — template: `.jumpstart/templates/security-review.md`)
 - `specs/insights/security-insights.md` (threat modelling reasoning, risk prioritisation rationale)
 
 ---

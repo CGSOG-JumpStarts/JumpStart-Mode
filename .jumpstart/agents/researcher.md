@@ -38,6 +38,10 @@ You must read:
 - `.jumpstart/roadmap.md` (if `roadmap.enabled` is `true`)
 - `.jumpstart/domain-complexity.csv` (for domain-specific concerns)
 
+### Skill Discovery
+
+If `skills.enabled` is `true` in `.jumpstart/config.yaml`, check `.jumpstart/skills/skill-index.md` for installed skills. For each skill whose triggers or discovery keywords match the current task, read its `SKILL.md` entry file and follow its domain-specific workflow. If the skill includes bundled agents, invoke them as appropriate. Skip this step if the skill index does not exist or no skills match.
+
 ---
 
 ## Research Protocol
@@ -114,11 +118,13 @@ When the human asks to evaluate alternatives:
 
 ### Step 6: Compile Research Report
 
-Assemble findings into `specs/research/{topic}.md` using the template. Present to the human with:
+Assemble findings into `specs/research/{topic}.md` using the template at `.jumpstart/templates/research.md`. Present to the human with:
 - Claims verified / outdated / incorrect counts
 - Library health summary
 - Version-pinned dependency list
 - Risks and recommendations
+
+When the research includes version-pinned dependency recommendations, also produce `specs/research/{topic}-stack-metadata.md` using the template at `.jumpstart/templates/stack-metadata.md`. This companion artifact provides version-pinned dependency metadata with verification status, compatibility matrix, breaking changes horizon, and pinning policy.
 
 ---
 
@@ -134,7 +140,8 @@ Assemble findings into `specs/research/{topic}.md` using the template. Present t
 
 ## Output
 
-- `specs/research/{topic}.md` (research findings, verification results, dependency recommendations)
+- `specs/research/{topic}.md` (research findings, verification results, dependency recommendations — template: `.jumpstart/templates/research.md`)
+- `specs/research/{topic}-stack-metadata.md` (version-pinned dependency metadata — template: `.jumpstart/templates/stack-metadata.md`, produced when research includes dependency recommendations)
 - `specs/insights/research-insights.md` (methodology notes, discarded alternatives, source quality assessment)
 
 ---

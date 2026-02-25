@@ -112,7 +112,12 @@ function showHelp() {
   console.log('  approve [path]       Approve current or specified phase artifact');
   console.log('  reject [path]        Reject artifact with reason');
   console.log('  checkpoint <action>  Session checkpoints (create/list/restore)');
-  console.log('  handoff              Export portable handoff package\n');
+  console.log('  handoff              Export portable handoff package');
+  console.log('  install <item>       Install skill/agent/prompt from marketplace');
+  console.log('  uninstall <item>     Uninstall a marketplace item');
+  console.log('  status               Show installed marketplace items');
+  console.log('  integrate            Rebuild skill integration files');
+  console.log('  update [item]        Update installed items to latest\n');
   console.log(chalk.bold('OPTIONS:'));
   console.log('  <directory>        Target directory (default: current directory)');
   console.log('  --name <name>      Set project name in config');
@@ -1064,12 +1069,32 @@ async function main() {
 
       const registryIdx = process.argv.indexOf('--registry');
       const registryUrl = registryIdx >= 0 ? process.argv[registryIdx + 1] : undefined;
+      const searchIdx = process.argv.indexOf('--search');
       const dryRun = process.argv.includes('--dry-run');
       const force = process.argv.includes('--force');
 
-      // Collect positional args (skip flags)
+      // Handle --search before positional parsing
+      if (searchIdx >= 0) {
+        const query = process.argv[searchIdx + 1] || '';
+        const index = await fetchRegistryIndex(registryUrl);
+        const results = searchItems(index, query);
+        if (results.length === 0) {
+          console.log(chalk.yellow(`No items found matching "${query}".`));
+        } else {
+          console.log(chalk.bold(`Found ${results.length} item(s):`));
+          for (const r of results) {
+            console.log(`  ${chalk.green(r.id)} — ${r.displayName} [${r.category}] (${r.version})`);
+            if (r.description) console.log(`    ${chalk.dim(r.description)}`);
+          }
+        }
+        return;
+      }
+
+      // Collect positional args (skip flags and their values)
+      const flagsWithValues = new Set();
+      if (registryIdx >= 0) flagsWithValues.add(registryIdx + 1);
       const positional = process.argv.slice(3).filter(
-        (a) => !a.startsWith('--') && !(registryIdx >= 0 && a === process.argv[registryIdx + 1])
+        (a, i) => !a.startsWith('--') && !flagsWithValues.has(i + 3)
       );
       const first = positional[0];
       const second = positional[1];
@@ -1093,22 +1118,6 @@ async function main() {
         console.log('  --registry <url>   Override registry URL');
         console.log('  --force            Re-install even if already present');
         console.log('  --dry-run          Show what would be installed');
-        return;
-      }
-
-      if (first === '--search') {
-        const query = second || process.argv[4] || '';
-        const index = await fetchRegistryIndex(registryUrl);
-        const results = searchItems(index, query);
-        if (results.length === 0) {
-          console.log(chalk.yellow(`No items found matching "${query}".`));
-        } else {
-          console.log(chalk.bold(`Found ${results.length} item(s):`));
-          for (const r of results) {
-            console.log(`  ${chalk.green(r.id)} — ${r.displayName} [${r.category}] (${r.version})`);
-            if (r.description) console.log(`    ${chalk.dim(r.description)}`);
-          }
-        }
         return;
       }
 
@@ -1223,6 +1232,63 @@ async function main() {
         if (entry.remappedFiles && entry.remappedFiles.length > 0) {
           console.log(`         ${chalk.dim('Remapped:  ' + entry.remappedFiles.join(', '))}`);
         }
+      }
+      return;
+    }
+
+    if (subcommand === 'integrate') {
+      // ── Skill Integration Manager ──────────────────────────────────────────
+      const { applyIntegration, cleanIntegration, readIntegrationLog } = await import('./lib/integrate.js');
+      const root = process.cwd();
+      const isClean = process.argv.includes('--clean');
+      const isStatus = process.argv.includes('--status');
+      const isHelp = process.argv.includes('--help');
+
+      if (isHelp) {
+        console.log(chalk.bold('Usage: jumpstart-mode integrate [--clean | --status]'));
+        console.log('');
+        console.log('  Rebuild skill integration files from installed skills.');
+        console.log('  Generates IDE instructions and framework skill index so');
+        console.log('  all Jump Start agents are aware of installed skills.');
+        console.log('');
+        console.log('  Options:');
+        console.log('    --clean   Remove all integration files.');
+        console.log('    --status  Show current integration state.');
+        return;
+      }
+
+      if (isStatus) {
+        const log = readIntegrationLog(root);
+        const fileCount = Object.keys(log.files || {}).length;
+        const skillCount = Object.keys(log.skillContributions || {}).length;
+        if (fileCount === 0) {
+          console.log(chalk.yellow('No integration files generated.'));
+          console.log(chalk.dim('Run: jumpstart-mode integrate'));
+          return;
+        }
+        console.log(chalk.bold(`Integration state (${log.generatedAt}):\n`));
+        console.log(chalk.cyan(`  Skills integrated: ${skillCount}`));
+        console.log(chalk.cyan(`  Files generated:   ${fileCount}`));
+        for (const [fp, meta] of Object.entries(log.files)) {
+          console.log(`    ${chalk.green(fp)} ${chalk.dim(meta.hash.slice(0, 18) + '...')}`);
+        }
+        return;
+      }
+
+      try {
+        if (isClean) {
+          const { filesRemoved } = cleanIntegration(root, { onProgress: (m) => console.log(m) });
+          console.log(chalk.green(`✓ Clean complete: removed ${filesRemoved.length} file(s).`));
+        } else {
+          const { filesWritten, filesRemoved, skillCount } = applyIntegration(root, { onProgress: (m) => console.log(m) });
+          console.log(chalk.green(`✓ Integration rebuilt: ${skillCount} skill(s), ${filesWritten.length} file(s) generated.`));
+          if (filesRemoved.length > 0) {
+            console.log(chalk.dim(`  Removed ${filesRemoved.length} stale file(s).`));
+          }
+        }
+      } catch (err) {
+        console.error(chalk.red(`Integration failed: ${err.message}`));
+        process.exit(1);
       }
       return;
     }

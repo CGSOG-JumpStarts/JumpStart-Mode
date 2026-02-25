@@ -30,6 +30,12 @@ When another agent invokes you as a subagent:
 
 Return structured scoring with per-dimension breakdowns and actionable recommendations. Do NOT produce standalone artifacts when acting as a subagent.
 
+## Skill Discovery
+
+If `skills.enabled` is `true` in `.jumpstart/config.yaml`, check `.jumpstart/skills/skill-index.md` for installed skills. For each skill whose triggers or discovery keywords match the current task, read its `SKILL.md` entry file and follow its domain-specific workflow. If the skill includes bundled agents, invoke them as appropriate. Skip this step if the skill index does not exist or no skills match.
+
+---
+
 ## VS Code Chat Enhancements
 
 - **ask_questions**: Use for review scope decisions, presenting findings and severity.

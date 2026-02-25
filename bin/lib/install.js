@@ -18,6 +18,7 @@
 
 import { createRequire } from 'module';
 import { loadConfig } from './config-loader.js';
+import { applyIntegration } from './integrate.js';
 
 const require = createRequire(import.meta.url);
 const fs = require('fs');
@@ -325,6 +326,10 @@ function recordInstall(projectRoot, item, targetPaths, remappedFiles = []) {
     installedAt: new Date().toISOString(),
     targetPaths,
     remappedFiles,
+    // Persist registry keywords+tags for offline skill-index generation
+    keywords: [...(item.keywords || []), ...(item.tags || [])].filter(
+      (v, i, a) => a.indexOf(v) === i
+    ),
   };
   writeInstalled(projectRoot, data);
 }
@@ -714,6 +719,16 @@ export async function installItem(itemId, options = {}) {
       if (result.remappedFiles.length > 0) {
         progress(`  Remapped ${result.remappedFiles.length} file(s) to ${ide.agentDir}`);
       }
+
+      // Auto-integrate: regenerate IDE instructions and skill index
+      try {
+        if (item.type === 'skill' || item.type === 'bundle') {
+          progress('Rebuilding skill integration...');
+          applyIntegration(projectRoot, { onProgress: progress });
+        }
+      } catch (err) {
+        progress(`⚠ Integration update failed (non-fatal): ${err.message}`);
+      }
     } finally {
       rmSync(stagingDir, { recursive: true, force: true });
     }
@@ -882,8 +897,16 @@ export function uninstallItem(itemId, projectRoot) {
   }
 
   // Remove from ledger
+  const wasSkill = entry.type === 'skill' || entry.type === 'bundle';
   delete data.items[itemId];
   writeInstalled(projectRoot, data);
+
+  // Re-integrate: regenerate IDE instructions and skill index without this skill
+  if (wasSkill) {
+    try {
+      applyIntegration(projectRoot);
+    } catch { /* non-fatal */ }
+  }
 
   return { removed, success: true };
 }

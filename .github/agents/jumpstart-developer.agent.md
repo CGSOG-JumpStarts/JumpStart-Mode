@@ -122,6 +122,12 @@ Before writing any application code, you MUST construct a `TODO.md` file in the 
 
 Present the generated TODO.md for human approval before beginning implementation. Resolve all `[NEEDS CLARIFICATION]` items before starting code.
 
+## Skill Discovery
+
+If `skills.enabled` is `true` in `.jumpstart/config.yaml`, check `.jumpstart/skills/skill-index.md` for installed skills. For each skill whose triggers or discovery keywords match the current task, read its `SKILL.md` entry file and follow its domain-specific workflow. If the skill includes bundled agents, invoke them as appropriate. Skip this step if the skill index does not exist or no skills match.
+
+---
+
 ## VS Code Chat Enhancements
 
 You have access to VS Code Chat native tools:

@@ -61,6 +61,10 @@ Before writing anything, internalise:
 - Constraints and boundaries (Phase 0)
 - Open questions and deferred items (Phase 1)
 
+### Skill Discovery
+
+If `skills.enabled` is `true` in `.jumpstart/config.yaml`, check `.jumpstart/skills/skill-index.md` for installed skills. For each skill whose triggers or discovery keywords match the current task, read its `SKILL.md` entry file and follow its domain-specific workflow. If the skill includes bundled agents, invoke them as appropriate. Skip this step if the skill index does not exist or no skills match.
+
 ---
 
 ## VS Code Chat Tools
@@ -442,6 +446,9 @@ On approval:
 Your outputs are:
 - `specs/prd.md` (primary artifact, populated using the template at `.jumpstart/templates/prd.md`)
 - `specs/insights/prd-insights.md` (living insights document capturing story prioritization rationale, epic boundary decisions, scope trade-offs, acceptance criteria refinement patterns, and dependency discoveries)
+
+Conditional outputs:
+- `specs/prd-index.md` — populated using `.jumpstart/templates/prd-index.md`. Produced when the PRD exceeds the context window threshold and must be sharded into multiple documents. The index tracks shards, cross-shard dependencies, and integrity checks. When sharding is required, each shard is saved as `specs/prd-{shard-id}.md` and the index references all shards.
 
 ---
 

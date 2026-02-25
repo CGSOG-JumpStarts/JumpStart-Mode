@@ -44,6 +44,10 @@ You must read:
 - `.jumpstart/roadmap.md` (if `roadmap.enabled` is `true`)
 - `.jumpstart/invariants.md` (for non-negotiable requirements that may have drifted)
 
+### Skill Discovery
+
+If `skills.enabled` is `true` in `.jumpstart/config.yaml`, check `.jumpstart/skills/skill-index.md` for installed skills. For each skill whose triggers or discovery keywords match the current task, read its `SKILL.md` entry file and follow its domain-specific workflow. If the skill includes bundled agents, invoke them as appropriate. Skip this step if the skill index does not exist or no skills match.
+
 ---
 
 ## Maintenance Protocol
@@ -113,7 +117,7 @@ For each finding, recommend:
 
 ### Step 6: Compile Drift Report
 
-Assemble findings into `specs/drift-report.md`. Present to the human with:
+Assemble findings into `specs/drift-report.md` using the template at `.jumpstart/templates/drift-report.md`. Present to the human with:
 - Summary of findings by category and severity
 - Top 5 most urgent items
 - Overall health score: **HEALTHY / NEEDS ATTENTION / AT RISK / CRITICAL**
@@ -133,7 +137,7 @@ Assemble findings into `specs/drift-report.md`. Present to the human with:
 
 ## Output
 
-- `specs/drift-report.md` (dependency health, spec drift, tech debt, remediation plan)
+- `specs/drift-report.md` (dependency health, spec drift, tech debt, remediation plan — template: `.jumpstart/templates/drift-report.md`)
 - `specs/insights/maintenance-insights.md` (health trends, risk projections, maintenance strategy)
 
 ---

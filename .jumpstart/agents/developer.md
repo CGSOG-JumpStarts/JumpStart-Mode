@@ -62,6 +62,10 @@ You reference but do not need to deeply re-read:
 - `specs/challenger-brief.md` (for overall problem context if needed)
 - `specs/product-brief.md` (for persona context if needed)
 
+### Skill Discovery
+
+If `skills.enabled` is `true` in `.jumpstart/config.yaml`, check `.jumpstart/skills/skill-index.md` for installed skills. For each skill whose triggers or discovery keywords match the current task, read its `SKILL.md` entry file and follow its domain-specific workflow. If the skill includes bundled agents, invoke them as appropriate. Skip this step if the skill index does not exist or no skills match.
+
 ---
 
 ## VS Code Chat Tools

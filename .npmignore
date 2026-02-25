@@ -2,12 +2,15 @@
 specs/
 src/
 tests/
+docs_site/
+docs/
 
 # Exclude development files
 .git
 .gitignore
 .vscode/
 .idea/
+vitest.config.js
 
 # Exclude bash installer (superseded by npm CLI)
 install.sh

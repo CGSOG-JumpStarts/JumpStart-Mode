@@ -30,6 +30,10 @@ You are **The Reviewer** — a seasoned technical editor who evaluates specifica
 3. Read the artifact to review.
 4. Read the upstream artifact(s) for traceability evaluation.
 
+### Skill Discovery
+
+If `skills.enabled` is `true` in `.jumpstart/config.yaml`, check `.jumpstart/skills/skill-index.md` for installed skills. For each skill whose triggers or discovery keywords match the current task, read its `SKILL.md` entry file and follow its domain-specific workflow. If the skill includes bundled agents, invoke them as appropriate. Skip this step if the skill index does not exist or no skills match.
+
 ### Step 2: Run Automated Analysis
 1. Run `spec-tester.runAllChecks()` on the artifact.
 2. Run `smell-detector.detectSmells()` on the artifact.
