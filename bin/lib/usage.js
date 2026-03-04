@@ -12,6 +12,17 @@ const require = createRequire(import.meta.url);
 const fs = require('fs');
 const path = require('path');
 
+// ─── Timeline Hook ───────────────────────────────────────────────────────────
+let _timelineHook = null;
+
+/**
+ * Set the timeline instance for recording usage events.
+ * @param {object|null} timeline - Timeline instance with recordEvent() method.
+ */
+export function setUsageTimelineHook(timeline) {
+  _timelineHook = timeline;
+}
+
 /**
  * @typedef {object} UsageEntry
  * @property {string} timestamp - ISO UTC timestamp.
@@ -75,6 +86,21 @@ export function logUsage(logPath, entry) {
   const dir = path.dirname(logPath);
   if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
   fs.writeFileSync(logPath, JSON.stringify(log, null, 2) + '\n', 'utf8');
+
+  // Record usage in timeline
+  if (_timelineHook) {
+    _timelineHook.recordEvent({
+      event_type: 'usage_logged',
+      phase: newEntry.phase,
+      agent: newEntry.agent,
+      action: `Usage logged: ${newEntry.estimated_tokens} tokens ($${newEntry.estimated_cost_usd.toFixed(4)})`,
+      metadata: {
+        estimated_tokens: newEntry.estimated_tokens,
+        estimated_cost_usd: newEntry.estimated_cost_usd,
+        model: newEntry.model
+      }
+    });
+  }
 
   return log;
 }

@@ -21,7 +21,7 @@
 | **Brownfield** | A project with existing code (vs. greenfield — new project) | Legacy, Existing |
 | **Greenfield** | A new project with no existing code | New, Fresh |
 | **Quick Flow** | An abbreviated 3-step workflow for minor changes | Fast Path, Shortcut |
-| **Party Mode** | Multi-agent advisory discussion session | Roundtable, Forum |
+| **Pit Crew** | Multi-agent advisory discussion session | Roundtable, Forum |
 | **Sprint** | A time-boxed iteration of implementation work | Iteration, Cycle |
 
 ## Product Terms

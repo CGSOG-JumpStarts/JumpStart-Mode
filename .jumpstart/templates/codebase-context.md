@@ -26,7 +26,7 @@
 
 ## Repository Structure
 
-> **Note:** This structure reflects the *original* codebase only. Files and directories created by the JumpStart installation process (`.jumpstart/`, `specs/`, `AGENTS.md`, `CLAUDE.md`, `.cursorrules`, and Copilot integration files under `.github/`) are excluded. See `agents.scout.exclude_jumpstart_paths` in config for the full exclusion list.
+> **Note:** This structure reflects the *original* codebase only. Files and directories created or managed by the JumpStart installation process (`.jumpstart/`, `specs/`, `AGENTS.md`, `CLAUDE.md`, `.cursorrules`, and Copilot integration files under `.github/`) are excluded. This includes merged `AGENTS.md` / `CLAUDE.md` documents that contain Jump Start managed blocks. See `agents.scout.exclude_jumpstart_paths` in config for the full exclusion list.
 
 ```
 [project-root]/

@@ -38,7 +38,7 @@ Specs are the source of truth. Code is derived. If there is a mismatch between a
 | `/jumpstart.plan` | Verify Phases 0-1 approved. Load `.jumpstart/agents/pm.md`. Output to `specs/prd.md`. |
 | `/jumpstart.architect` | Verify Phases 0-2 approved. Load `.jumpstart/agents/architect.md`. Output to `specs/architecture.md`, `specs/implementation-plan.md`, `specs/decisions/*.md`. |
 | `/jumpstart.build` | Verify Phases 0-3 approved. Load `.jumpstart/agents/developer.md`. Output code to `src/`, tests to `tests/`. |
-| `/jumpstart.party` | Load `.jumpstart/agents/facilitator.md`. Launch multi-agent roundtable discussion. Advisory only — no artifact writes. |
+| `/jumpstart.pitcrew` | Load `.jumpstart/agents/facilitator.md`. Launch multi-agent roundtable discussion. Advisory only — no artifact writes. |
 | `/jumpstart.resume` | Read `.jumpstart/state/state.json` + insights. Present session resumption briefing (TLDR, where you left off, what's next, key insights, open questions). No artifact writes. |
 | `/jumpstart.status` | Read config and all spec files. Report phase completion status. |
 | `/jumpstart.review` | Validate current artifacts against templates. Report gaps. |
@@ -47,6 +47,7 @@ Specs are the source of truth. Code is derived. If there is a mismatch between a
 | `/jumpstart.status` (marketplace) | List all installed marketplace items with versions and locations. |
 | `/jumpstart.uninstall <id>` | Uninstall a marketplace item and its remapped agent/prompt files. |
 | `/jumpstart.update [<id>]` | Update installed items to the latest registry version. |
+| `/jumpstart.timeline` | View, query, export, or clear the interaction timeline. Supports `summary`, `report` (markdown/json/html), `query` (filter by phase/agent/type), and `clear`. |
 
 ## Rules
 

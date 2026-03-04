@@ -109,6 +109,7 @@ describe('PM → Architect Handoff', () => {
 describe('Architect → Developer Handoff', () => {
   it('validates a valid Architect-to-Dev payload', () => {
     const payload = {
+      project_type: 'greenfield',
       technology_stack: {
         runtime: { name: 'Node.js', version: '20.x' },
         framework: { name: 'Express', version: '4.18' }

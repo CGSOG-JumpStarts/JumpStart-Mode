@@ -50,7 +50,7 @@ Below is a detailed mapping of each agent in the Jump Start framework, the templ
 | **Adversary** | `adversarial-review.md` | *None* |
 | **DevOps** | `deploy.md`, `ci-cd.yml`¹ | `Jump Start: Security`, `Jump Start: Researcher` |
 | **Diagram Verifier** | *None — uses CLI tooling, not templates* | *None* |
-| **Facilitator** | `party-session.md`¹ | `Jump Start: QA`, `Jump Start: Security`, `Jump Start: Performance`, `Jump Start: Researcher`, `Jump Start: UX Designer`, `Jump Start: Refactor`, `Jump Start: Tech Writer`, `Jump Start: Scrum Master`, `Jump Start: DevOps`, `Jump Start: Adversary`, `Jump Start: Reviewer`, `Jump Start: Retrospective`, `Jump Start: Maintenance`, `Jump Start: Quick Dev` |
+| **Facilitator** | `pitcrew-session.md`¹ | `Jump Start: QA`, `Jump Start: Security`, `Jump Start: Performance`, `Jump Start: Researcher`, `Jump Start: UX Designer`, `Jump Start: Refactor`, `Jump Start: Tech Writer`, `Jump Start: Scrum Master`, `Jump Start: DevOps`, `Jump Start: Adversary`, `Jump Start: Reviewer`, `Jump Start: Retrospective`, `Jump Start: Maintenance`, `Jump Start: Quick Dev` |
 | **Maintenance** | `drift-report.md`¹ | *None* |
 | **Performance** | `nfrs.md`¹ | `Jump Start: Researcher` |
 | **QA** | `test-plan.md`¹, `test-report.md`¹ | `Jump Start: Security`, `Jump Start: Performance` |

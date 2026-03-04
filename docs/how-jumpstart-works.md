@@ -22,7 +22,7 @@ Vanilla AI agents (ChatGPT, Copilot, Claude) suffer from three fatal problems wh
 
 ```
 [Brownfield only: Scout] → Phase 0: Challenger → Phase 1: Analyst → Phase 2: PM → Phase 3: Architect → Phase 4: Developer
-                                        ↑ Party Mode (Facilitator) available at any phase ↑
+                                        ↑ Pit Crew (Facilitator) available at any phase ↑
 ```
 
 Every phase produces an artifact (stored in `specs/`). Every artifact must be explicitly approved by the human before the next phase begins. This is enforced by the **Phase Gate Approval** section at the bottom of every artifact — all checkboxes must be checked and "Approved by" must not be "Pending."
@@ -93,13 +93,13 @@ Every phase produces an artifact (stored in `specs/`). Every artifact must be ex
 - **Deviation Handling:** Minor (implement + document), Major (stop, present options, wait for human), Architectural (never — halt and escalate to Architect)
 - **Key Constraint:** Executor, not strategist. Follows the plan. Untested code is unfinished. Functions &lt;40-50 lines. No gold-plating. Commits follow `jumpstart(M1-T01): [title]` format.
 
-#### 3.7 The Facilitator (Party Mode — Any Phase)
+#### 3.7 The Facilitator (Pit Crew — Any Phase)
 
-- **Activation:** `/jumpstart.party [topic]`
+- **Activation:** `/jumpstart.pitcrew [topic]`
 - **Goal:** Multi-agent roundtable discussion. Loads 2-3 relevant agent personas into a single session and orchestrates structured, in-character debate.
 - **Protocol:** 5 steps — Welcome & Topic Setting (select relevant agents from roster) → Discussion Orchestration (in-character responses: `**The Architect:** [response]`) → Question Handling → Decision Capture → Session Conclusion
 - **Tools:** `ask_questions` (topic narrowing, trade-offs), `manage_todo_list` (track discussion topics/decisions)
-- **Output:** Multi-agent conversation in chat + `specs/insights/party-insights.md`. **No spec files, source code, or plan changes.**
+- **Output:** Multi-agent conversation in chat + `specs/insights/pitcrew-insights.md`. **No spec files, source code, or plan changes.**
 - **Key Constraint:** Advisory only — does not modify any artifacts. Decisions must flow through normal phase workflow. Neutral — does not have opinions of its own.
 
 ---
@@ -193,7 +193,7 @@ JumpStart enforces a **5-layer automated quality gate** (Roadmap Article VIII):
 | `/jumpstart.plan` | PM | 2 |
 | `/jumpstart.architect` | Architect | 3 |
 | `/jumpstart.build` | Developer | 4 |
-| `/jumpstart.party [topic]` | Facilitator | Any |
+| `/jumpstart.pitcrew [topic]` | Facilitator | Any |
 | `/jumpstart.qa` | QA | Any |
 | `/jumpstart.security` | Security | Any |
 | `/jumpstart.performance` | Performance | Any |

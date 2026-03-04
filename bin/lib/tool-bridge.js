@@ -18,10 +18,11 @@ const path = require('path');
  * @param {object} [options.tracer] — SimulationTracer instance for logging
  * @param {boolean} [options.dryRun=false] — If true, skip file writes
  * @param {Function} [options.onUserProxyCall] — Callback for ask_questions routing
+ * @param {object} [options.timeline] — Timeline instance for event recording
  * @returns {object} Bridge with .execute(), .getTodoState(), .getCallHistory()
  */
 function createToolBridge(options = {}) {
-  const { workspaceDir, tracer = null, dryRun = false, onUserProxyCall = null } = options;
+  const { workspaceDir, tracer = null, dryRun = false, onUserProxyCall = null, timeline = null } = options;
 
   const callHistory = [];
   let todoState = [];
@@ -233,6 +234,25 @@ function createToolBridge(options = {}) {
       } catch (err) {
         return { success: false, error: err.message };
       }
+    },
+
+    /**
+     * Record a timeline event (for live IDE agent self-reporting).
+     */
+    async record_timeline_event(args) {
+      if (!timeline) {
+        return { success: false, error: 'Timeline recording is not enabled' };
+      }
+      const evt = timeline.recordEvent({
+        event_type: args.event_type || 'custom',
+        action: args.action || '',
+        phase: args.phase,
+        agent: args.agent,
+        parent_agent: args.parent_agent,
+        metadata: args.metadata || null,
+        duration_ms: args.duration_ms || null
+      });
+      return { success: !!evt, event_id: evt ? evt.id : null };
     }
   };
 
@@ -250,6 +270,27 @@ function createToolBridge(options = {}) {
 
       callHistory.push({ id: toolCall.id, name, args, timestamp: Date.now() });
 
+      // Record timeline event for the tool call
+      if (timeline) {
+        timeline.recordEvent({
+          event_type: 'tool_call',
+          action: `Tool call: ${name}`,
+          metadata: { tool_name: name, tool_args: args }
+        });
+
+        // Emit granular events based on tool type
+        if (name === 'read_file' && args.filePath) {
+          const fp = args.filePath.replace(/\\/g, '/');
+          if (fp.includes('/templates/')) {
+            timeline.recordEvent({ event_type: 'template_read', action: `Read template: ${args.filePath}`, metadata: { template_path: args.filePath } });
+          } else if (fp.includes('/specs/')) {
+            timeline.recordEvent({ event_type: 'artifact_read', action: `Read artifact: ${args.filePath}`, metadata: { artifact_path: args.filePath } });
+          } else {
+            timeline.recordEvent({ event_type: 'file_read', action: `Read file: ${args.filePath}`, metadata: { file_path: args.filePath } });
+          }
+        }
+      }
+
       const handler = handlers[name];
       if (!handler) {
         const result = { error: `Unknown tool: ${name}` };
@@ -262,6 +303,32 @@ function createToolBridge(options = {}) {
         // Log to tracer if available
         if (tracer && typeof tracer.logToolInterception === 'function') {
           tracer.logToolInterception(name, args, result);
+        }
+
+        // Record timeline result event
+        if (timeline) {
+          timeline.recordEvent({
+            event_type: 'tool_result',
+            action: `Tool result: ${name}`,
+            metadata: { tool_name: name, tool_result: typeof result === 'object' ? { success: result.success, error: result.error } : result }
+          });
+
+          // Emit granular write events
+          if (name === 'create_file' && args.filePath) {
+            const fp = args.filePath.replace(/\\/g, '/');
+            if (fp.includes('/specs/') && !fp.includes('/insights/')) {
+              timeline.recordEvent({ event_type: 'artifact_write', action: `Created artifact: ${args.filePath}`, metadata: { artifact_path: args.filePath } });
+            } else {
+              timeline.recordEvent({ event_type: 'file_write', action: `Created file: ${args.filePath}`, metadata: { file_path: args.filePath } });
+            }
+          } else if (name === 'replace_string_in_file' && args.filePath) {
+            timeline.recordEvent({ event_type: 'file_write', action: `Edited file: ${args.filePath}`, metadata: { file_path: args.filePath } });
+          }
+
+          // Emit question events
+          if (name === 'ask_questions' && args.questions) {
+            timeline.recordEvent({ event_type: 'question_asked', action: `Asked ${args.questions.length} question(s)`, metadata: { questions: args.questions } });
+          }
         }
 
         return { content: JSON.stringify(result) };

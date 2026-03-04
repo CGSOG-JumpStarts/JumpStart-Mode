@@ -1,0 +1,217 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "jumpstart://timeline",
+  "title": "Jump Start Timeline Events Schema",
+  "description": "Schema for agent interaction timeline events. Records all agent actions, tool calls, questions, approvals, subagent invocations, and artifacts as a chronological timeline.",
+  "type": "object",
+  "required": ["version", "session_id", "started_at", "events"],
+  "properties": {
+    "version": {
+      "type": "string",
+      "description": "Schema version for forward-compatibility.",
+      "const": "1.0.0"
+    },
+    "session_id": {
+      "type": "string",
+      "description": "Unique identifier grouping events from a single run or session.",
+      "pattern": "^ses-[a-z0-9-]+$"
+    },
+    "started_at": {
+      "type": "string",
+      "description": "ISO 8601 UTC timestamp when the session started.",
+      "format": "date-time"
+    },
+    "ended_at": {
+      "type": ["string", "null"],
+      "description": "ISO 8601 UTC timestamp when the session ended, or null if still active.",
+      "format": "date-time"
+    },
+    "events": {
+      "type": "array",
+      "description": "Ordered array of timeline events.",
+      "items": {
+        "$ref": "#/definitions/TimelineEvent"
+      }
+    }
+  },
+  "definitions": {
+    "TimelineEvent": {
+      "type": "object",
+      "required": ["id", "timestamp", "session_id", "event_type", "action"],
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique event identifier.",
+          "pattern": "^evt-[a-z0-9-]+$"
+        },
+        "timestamp": {
+          "type": "string",
+          "description": "ISO 8601 UTC timestamp when the event occurred.",
+          "format": "date-time"
+        },
+        "session_id": {
+          "type": "string",
+          "description": "Session this event belongs to."
+        },
+        "phase": {
+          "type": ["string", "number", "null"],
+          "description": "Phase identifier (e.g., 0, 1, 2, 3, 4 or 'scout', 'challenger', etc.)."
+        },
+        "agent": {
+          "type": ["string", "null"],
+          "description": "Agent name that generated this event (e.g., 'Challenger', 'Architect')."
+        },
+        "parent_agent": {
+          "type": ["string", "null"],
+          "description": "Parent agent name when this event originates from a subagent invocation."
+        },
+        "event_type": {
+          "type": "string",
+          "description": "Categorized event type.",
+          "enum": [
+            "phase_start",
+            "phase_end",
+            "tool_call",
+            "tool_result",
+            "file_read",
+            "file_write",
+            "template_read",
+            "artifact_write",
+            "artifact_read",
+            "question_asked",
+            "question_answered",
+            "approval",
+            "rejection",
+            "subagent_invoked",
+            "subagent_completed",
+            "llm_turn_start",
+            "llm_turn_end",
+            "research_query",
+            "checkpoint_created",
+            "rewind",
+            "handoff",
+            "usage_logged",
+            "custom"
+          ]
+        },
+        "action": {
+          "type": "string",
+          "description": "Human-readable description of what happened."
+        },
+        "metadata": {
+          "type": ["object", "null"],
+          "description": "Freeform metadata associated with the event. Contents vary by event_type.",
+          "properties": {
+            "tool_name": {
+              "type": "string",
+              "description": "Name of the tool called (for tool_call/tool_result events)."
+            },
+            "tool_args": {
+              "type": "object",
+              "description": "Arguments passed to the tool."
+            },
+            "tool_result": {
+              "type": ["object", "string", "null"],
+              "description": "Result returned by the tool."
+            },
+            "file_path": {
+              "type": "string",
+              "description": "File path involved in the event."
+            },
+            "template_path": {
+              "type": "string",
+              "description": "Template file path (for template_read events)."
+            },
+            "artifact_path": {
+              "type": "string",
+              "description": "Artifact file path (for artifact_write/artifact_read events)."
+            },
+            "questions": {
+              "type": "array",
+              "description": "Questions asked (for question_asked events).",
+              "items": { "type": "object" }
+            },
+            "answers": {
+              "type": "object",
+              "description": "Answers received (for question_answered events)."
+            },
+            "approver": {
+              "type": "string",
+              "description": "Name of the approver (for approval events)."
+            },
+            "reason": {
+              "type": "string",
+              "description": "Reason for rejection (for rejection events)."
+            },
+            "subagent_name": {
+              "type": "string",
+              "description": "Name of the subagent invoked/completed."
+            },
+            "subagent_query": {
+              "type": "string",
+              "description": "Query sent to the subagent."
+            },
+            "subagent_result": {
+              "type": ["string", "null"],
+              "description": "Result returned by the subagent."
+            },
+            "model": {
+              "type": "string",
+              "description": "LLM model ID (for llm_turn_start/end events)."
+            },
+            "turn": {
+              "type": "number",
+              "description": "Conversation turn number."
+            },
+            "prompt_tokens": {
+              "type": "number",
+              "description": "Prompt token count."
+            },
+            "completion_tokens": {
+              "type": "number",
+              "description": "Completion token count."
+            },
+            "estimated_cost_usd": {
+              "type": "number",
+              "description": "Estimated cost in USD."
+            },
+            "source_phase": {
+              "type": ["string", "number", "null"],
+              "description": "Source phase (for handoff events)."
+            },
+            "target_phase": {
+              "type": ["string", "number", "null"],
+              "description": "Target phase (for handoff events)."
+            },
+            "checkpoint_id": {
+              "type": "string",
+              "description": "Checkpoint identifier."
+            },
+            "checkpoint_label": {
+              "type": "string",
+              "description": "Human-readable checkpoint label."
+            },
+            "target_phase_for_rewind": {
+              "type": ["string", "number", "null"],
+              "description": "Target phase for rewind events."
+            },
+            "context_files": {
+              "type": "array",
+              "description": "Context files involved in handoff.",
+              "items": { "type": "string" }
+            },
+            "estimated_tokens": {
+              "type": "number",
+              "description": "Estimated token count (for usage_logged events)."
+            }
+          },
+          "additionalProperties": true
+        },
+        "duration_ms": {
+          "type": ["number", "null"],
+          "description": "Duration in milliseconds for paired events (e.g., phase_start to phase_end, llm_turn_start to llm_turn_end)."
+        }
+      }
+    }
+  }
+}

@@ -25,7 +25,7 @@ Specs are the source of truth. Code is derived. If there is a mismatch between a
 [Brownfield only] Pre-Phase (Scout) -> Phase 0 (Challenger) -> Phase 1 (Analyst) -> Phase 2 (PM) -> Phase 3 (Architect) -> Phase 4 (Developer)
 ```
 
-Party Mode (`/jumpstart.party`) can be invoked at any phase for multi-agent advisory discussions via the Facilitator agent.
+Pit Crew (`/jumpstart.pitcrew`) can be invoked at any phase for multi-agent advisory discussions via the Facilitator agent.
 
 Phases are strictly sequential. Each must be completed and approved by the human before the next begins. For brownfield projects (`project.type: brownfield` in config), the Scout agent runs before Phase 0 to analyze the existing codebase.
 

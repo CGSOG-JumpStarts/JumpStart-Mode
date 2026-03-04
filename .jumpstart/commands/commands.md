@@ -277,21 +277,21 @@ npx jumpstart-mode verify --file specs/architecture.md --strict
 
 ---
 
-## /jumpstart.party
+## /jumpstart.pitcrew
 
 **Phase:** Any (cross-phase collaboration)
 **Agent:** The Facilitator
 **Agent File:** `.jumpstart/agents/facilitator.md`
 **Output:** None (advisory only — no artifacts are written)
 
-**Description:** Launch Party Mode — a multi-agent roundtable discussion. The Facilitator agent discovers all available agent personas by scanning `.jumpstart/agents/`, selects the most relevant 2-3 agents for the current topic, and orchestrates an in-character discussion. Party Mode is advisory: it surfaces insights and perspectives but does not write or modify any spec artifacts.
+**Description:** Launch Pit Crew — a multi-agent roundtable discussion. The Facilitator agent discovers all available agent personas by scanning `.jumpstart/agents/`, selects the most relevant 2-3 agents for the current topic, and orchestrates an in-character discussion. Pit Crew is advisory: it surfaces insights and perspectives but does not write or modify any spec artifacts.
 
 **Usage:**
 ```
-/jumpstart.party [optional: topic or question]
+/jumpstart.pitcrew [optional: topic or question]
 ```
 
-**Pre-conditions:** None. Party Mode can be invoked at any point in the workflow.
+**Pre-conditions:** None. Pit Crew can be invoked at any point in the workflow.
 
 **Behavior:**
 1. Load the Facilitator agent persona from `.jumpstart/agents/facilitator.md`.
@@ -304,7 +304,7 @@ npx jumpstart-mode verify --file specs/architecture.md --strict
 8. The human decides what (if anything) to incorporate into formal artifacts.
 
 **Guardrails:**
-- No agent may write to any file in `specs/` during Party Mode.
+- No agent may write to any file in `specs/` during Pit Crew.
 - All agents must respect the Roadmap (`.jumpstart/roadmap.md`).
 - The Facilitator stays neutral and does not advocate for any position.
 
@@ -1519,4 +1519,53 @@ jumpstart-mode summarize 4 --markdown  # Markdown output for Phase 4
 Ephemeral by default — displayed to the user. Can be saved to a file if needed:
 ```bash
 jumpstart-mode summarize 4 --markdown > .jumpstart/context-packet-phase4.md
+```
+
+---
+
+## /jumpstart.timeline
+
+**Phase:** Any
+**Agent:** System
+**Agent File:** N/A (built-in)
+**Output:** Ephemeral display, or exported file
+
+**Description:** View, query, export, or clear the interaction timeline. The timeline records all agent and subagent interactions including tool calls, file reads/writes, template references, artifact operations, questions, approvals, LLM turns, research queries, phase transitions, checkpoints, rewinds, and handoffs.
+
+**Usage:**
+```
+/jumpstart.timeline                          # Show summary of current session
+/jumpstart.timeline summary                  # Same as above
+/jumpstart.timeline report                   # Generate full markdown report
+/jumpstart.timeline report --format html     # Generate self-contained HTML report
+/jumpstart.timeline report --format json     # Export raw JSON
+/jumpstart.timeline query --phase architect  # Filter events by phase
+/jumpstart.timeline query --agent Security   # Filter events by agent
+/jumpstart.timeline query --type tool_call   # Filter events by type
+/jumpstart.timeline query --from 2025-01-01  # Filter events after date
+/jumpstart.timeline query --to 2025-12-31    # Filter events before date
+/jumpstart.timeline clear                    # Archive and clear timeline
+```
+
+**Pre-conditions:**
+- `timeline.enabled` must be `true` in `.jumpstart/config.yaml` (default: `true`).
+- Timeline events file must exist at `timeline.events_file` path (created automatically on first event).
+
+**Behavior:**
+1. Load timeline configuration from `.jumpstart/config.yaml`.
+2. Read the timeline events file (default: `.jumpstart/state/timeline.json`).
+3. Execute the requested action:
+   - **summary** (default): Show session metadata, event counts by type/phase/agent, duration, last N events.
+   - **report**: Generate a full timeline report in the requested format (markdown, json, or html). HTML reports are self-contained with dark theme, collapsible phases, and metadata panels.
+   - **query**: Filter events by phase, agent, event type, session, or date range and display matching events.
+   - **clear**: Archive the current timeline to `.jumpstart/archive/` (if `timeline.archive_on_clear` is true) and reset.
+4. Display the result or save to the specified output file.
+
+**CLI equivalent:**
+```bash
+jumpstart-mode timeline                       # Summary
+jumpstart-mode timeline --format html         # HTML report
+jumpstart-mode timeline --phase architect     # Query by phase
+jumpstart-mode timeline --type tool_call      # Query by event type
+jumpstart-mode timeline --clear               # Archive and clear
 ```

@@ -23,6 +23,22 @@ function writeState(dir, state) {
   );
 }
 
+function writeConfig(dir, overrides = {}) {
+  const autoHandoff = overrides.auto_handoff !== undefined ? overrides.auto_handoff : true;
+  const currentPhase = overrides.current_phase !== undefined ? overrides.current_phase : null;
+  const content = [
+    'project:',
+    '  name: test-project',
+    '  approver: QA Team',
+    '  type: greenfield',
+    'workflow:',
+    `  auto_handoff: ${autoHandoff ? 'true' : 'false'}`,
+    `  current_phase: ${currentPhase === null ? 'null' : currentPhase}`,
+  ].join('\n');
+
+  writeFileSync(join(dir, '.jumpstart', 'config.yaml'), `${content}\n`, 'utf8');
+}
+
 function loadStateFromDisk(dir) {
   return JSON.parse(readFileSync(join(dir, '.jumpstart', 'state', 'state.json'), 'utf8'));
 }
@@ -192,6 +208,7 @@ describe('approve', () => {
       const { approveArtifact } = await loadApprove();
       writeArtifact(tmpDir, 'specs/prd.md', `# PRD\n${DRAFT_APPROVAL}`);
       writeState(tmpDir, defaultState({ current_phase: 2 }));
+      writeConfig(tmpDir, { auto_handoff: false, current_phase: 2 });
 
       const statePath = join(tmpDir, '.jumpstart', 'state', 'state.json');
       const result = approveArtifact('specs/prd.md', { root: tmpDir, statePath });
@@ -205,11 +222,57 @@ describe('approve', () => {
       const { approveArtifact } = await loadApprove();
       writeArtifact(tmpDir, 'specs/prd.md', `# PRD\n${DRAFT_APPROVAL}`);
       writeState(tmpDir, defaultState({ current_phase: 2 }));
+      writeConfig(tmpDir, { auto_handoff: false, current_phase: 2 });
 
       const statePath = join(tmpDir, '.jumpstart', 'state', 'state.json');
       const result = approveArtifact('specs/prd.md', { root: tmpDir, statePath });
 
       expect(result.approver).toBe('Human');
+    });
+
+    it('auto-advances phase when workflow.auto_handoff is enabled', async () => {
+      const { approveArtifact } = await loadApprove();
+      writeArtifact(tmpDir, 'specs/prd.md', `# PRD\n${DRAFT_APPROVAL}`);
+      writeState(tmpDir, defaultState({ current_phase: 2, current_agent: 'pm' }));
+      writeConfig(tmpDir, { auto_handoff: true, current_phase: 2 });
+
+      const statePath = join(tmpDir, '.jumpstart', 'state', 'state.json');
+      const configPath = join(tmpDir, '.jumpstart', 'config.yaml');
+      const result = approveArtifact('specs/prd.md', { root: tmpDir, statePath, configPath });
+
+      expect(result.success).toBe(true);
+      expect(result.auto_handoff.enabled).toBe(true);
+      expect(result.auto_handoff.advanced).toBe(true);
+      expect(result.auto_handoff.command).toBe('/jumpstart.architect');
+
+      const state = loadStateFromDisk(tmpDir);
+      expect(state.current_phase).toBe(3);
+      expect(state.current_agent).toBe('architect');
+
+      const configContent = readFileSync(configPath, 'utf8');
+      expect(configContent).toContain('current_phase: 3');
+    });
+
+    it('does not auto-advance phase when workflow.auto_handoff is disabled', async () => {
+      const { approveArtifact } = await loadApprove();
+      writeArtifact(tmpDir, 'specs/prd.md', `# PRD\n${DRAFT_APPROVAL}`);
+      writeState(tmpDir, defaultState({ current_phase: 2, current_agent: 'pm' }));
+      writeConfig(tmpDir, { auto_handoff: false, current_phase: 2 });
+
+      const statePath = join(tmpDir, '.jumpstart', 'state', 'state.json');
+      const configPath = join(tmpDir, '.jumpstart', 'config.yaml');
+      const result = approveArtifact('specs/prd.md', { root: tmpDir, statePath, configPath });
+
+      expect(result.success).toBe(true);
+      expect(result.auto_handoff.enabled).toBe(false);
+      expect(result.auto_handoff.advanced).toBe(false);
+
+      const state = loadStateFromDisk(tmpDir);
+      expect(state.current_phase).toBe(2);
+      expect(state.current_agent).toBe('pm');
+
+      const configContent = readFileSync(configPath, 'utf8');
+      expect(configContent).toContain('current_phase: 2');
     });
 
     it('fails for missing file', async () => {
@@ -331,11 +394,13 @@ describe('approve', () => {
         artifact: 'specs/prd.md',
         approver: 'Jane',
         date: '2026-02-13',
-        handoff_info: { ready: true, next_phase: 3, next_agent: 'architect' }
+        handoff_info: { ready: true, next_phase: 3, next_agent: 'architect' },
+        auto_handoff: { enabled: true, advanced: true, command: '/jumpstart.architect', warning: null }
       });
       expect(text).toContain('specs/prd.md');
       expect(text).toContain('Jane');
       expect(text).toContain('Phase 3');
+      expect(text).toContain('Auto-advanced phase state.');
     });
 
     it('shows error for failed approval', async () => {

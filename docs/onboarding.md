@@ -872,11 +872,11 @@ Insights are append-only and never deleted — they're the institutional memory 
 
 ---
 
-### Party Mode: Multi-Agent Collaboration
+### Pit Crew: Multi-Agent Collaboration
 
 The **Facilitator** agent orchestrates multi-agent discussions for complex decisions:
 
-**When to use Party Mode:**
+**When to use Pit Crew:**
 - Complex trade-offs with multiple perspectives needed
 - Architecture decisions affecting security, performance, and UX
 - Technology selection with competing concerns
@@ -884,7 +884,7 @@ The **Facilitator** agent orchestrates multi-agent discussions for complex decis
 
 **How it works:**
 
-1. You invoke: `/jumpstart.party "Should we use GraphQL or REST?"`
+1. You invoke: `/jumpstart.pitcrew "Should we use GraphQL or REST?"`
 
 2. Facilitator analyzes the question and selects relevant agents:
    - Architect (technology fit)
@@ -900,9 +900,9 @@ The **Facilitator** agent orchestrates multi-agent discussions for complex decis
 
 4. Facilitator synthesizes viewpoints and presents recommendation with pros/cons
 
-5. Decision is logged to `specs/insights/party-insights.md`
+5. Decision is logged to `specs/insights/pitcrew-insights.md`
 
-**Important**: Party Mode is **advisory only** — it doesn't produce phase artifacts or bypass gates. Use it to inform decisions, then carry findings into the normal phase workflow.
+**Important**: Pit Crew is **advisory only** — it doesn't produce phase artifacts or bypass gates. Use it to inform decisions, then carry findings into the normal phase workflow.
 
 ---
 
@@ -1085,7 +1085,7 @@ Beyond the five core phases, Jump Start includes 16 advisory agents you can invo
 /jumpstart.qa            # Test strategy and release readiness
 /jumpstart.adversary     # Stress-test specs for gaps
 /jumpstart.reviewer      # Peer review scoring
-/jumpstart.party         # Multi-agent roundtable discussion
+/jumpstart.pitcrew         # Multi-agent roundtable discussion
 ```
 
 Advisory agents inform decisions but don't block phase progression. Use them when you need specialist perspective.
@@ -1156,7 +1156,7 @@ The Quick Dev agent provides an accelerated path for small, well-defined changes
 ### Multi-Agent Discussion
 
 ```
-/jumpstart.party "Should we use GraphQL or REST for our API?"
+/jumpstart.pitcrew "Should we use GraphQL or REST for our API?"
 ```
 
 The Facilitator agent orchestrates a roundtable where multiple specialist agents weigh in.

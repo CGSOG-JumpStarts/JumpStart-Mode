@@ -60,7 +60,7 @@ const SKILL_PRESETS = {
     },
     recommendations: [
       'Run /jumpstart.status to see project progress at any time',
-      'Use /jumpstart.party for multi-agent advisory discussions',
+      'Use /jumpstart.pitcrew for multi-agent advisory discussions',
       'Review specs/ artifacts before advancing phases'
     ]
   },

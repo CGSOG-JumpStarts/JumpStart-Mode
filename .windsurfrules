@@ -10,7 +10,7 @@ This project uses the Jump Start spec-driven agentic coding framework.
 - `/jumpstart.plan`      -> Read and follow `.jumpstart/agents/pm.md`
 - `/jumpstart.architect` -> Read and follow `.jumpstart/agents/architect.md`
 - `/jumpstart.build`     -> Read and follow `.jumpstart/agents/developer.md`
-- `/jumpstart.party`     -> Read and follow `.jumpstart/agents/facilitator.md` (Party Mode: multi-agent collaboration)
+- `/jumpstart.pitcrew`     -> Read and follow `.jumpstart/agents/facilitator.md` (Pit Crew: multi-agent collaboration)
 - `/jumpstart.status`    -> Check all spec files and report workflow state
 - `/jumpstart.review`    -> Validate artifacts against templates
 

@@ -18,7 +18,7 @@ flowchart TB
     P1 -->|Product Brief| P2[Phase 2: Plan]
     P2 -->|PRD| P3[Phase 3: Architect]
     P3 -->|Specs| P4[Phase 4: Build]
-    PM_PARTY["Party Mode\n(advisory)"] -.->|available anytime| P0
+    PM_PARTY["Pit Crew\n(advisory)"] -.->|available anytime| P0
     PM_PARTY -.->|available anytime| P1
     PM_PARTY -.->|available anytime| P2
     PM_PARTY -.->|available anytime| P3
@@ -51,7 +51,7 @@ flowchart TB
 
 <br>`specs/implementation-plan.md` |
 | **4** | **The Developer** | `/jumpstart.build` | Writes code and tests according to the plan. | `src/`, `tests/`, `README.md` |
-| **Any** | **The Facilitator** | `/jumpstart.party` | Orchestrates multi-agent roundtable discussions. Advisory only. | None (insights only) |
+| **Any** | **The Facilitator** | `/jumpstart.pitcrew` | Orchestrates multi-agent roundtable discussions. Advisory only. | None (insights only) |
 | **Any** | **System** | `/jumpstart.resume` | Session resumption briefing: TLDR, where you left off, what's next, key insights, open questions. | None (briefing only) |
 
 ---
@@ -63,6 +63,7 @@ All agents must follow these directives without exception.
 ### 1. The Context Protocol
 
 * **Read Before Write:** Before generating any content, you must read `.jumpstart/config.yaml` and the specific agent instruction file in `.jumpstart/agents/`.
+* **Merged Instruction Files:** Root instruction files (`AGENTS.md`, `CLAUDE.md`) may contain user content plus a Jump Start managed merge block. Treat merged files as valid and follow the combined instructions unless they conflict with Roadmap non-negotiables.
 * **Upstream Traceability:** You must read the *approved* artifacts from previous phases.
 * *Analyst* reads *Challenger Brief*.
 * *Architect* reads *PRD*, *Product Brief*, and *Challenger Brief*.
@@ -121,6 +122,23 @@ If running within VS Code Copilot, agents have access to native UI tools:
 
 * **`ask_questions`:** Use this to present multiple-choice decisions to the user (e.g., selecting a tech stack or prioritizing a feature).
 * **`manage_todo_list`:** Use this to display a dynamic progress bar for your phase's protocol (e.g., "Step 3 of 8: User Journey Mapping").
+* **`record_timeline_event`:** Use this to record significant actions to the interaction timeline (e.g., reading a template, writing an artifact, invoking a subagent, performing research).
+
+---
+
+### 8. The Timeline Protocol
+
+When `timeline.enabled` is `true` in `.jumpstart/config.yaml`, all agent interactions are recorded to an append-only event log at the configured `timeline.events_file` (default: `.jumpstart/state/timeline.json`).
+
+* **Automatic Recording (Headless Mode):** The headless runner and tool-bridge automatically capture tool calls, file reads/writes, template reads, artifact operations, LLM turns, questions, approvals, phase transitions, checkpoints, rewinds, handoffs, and usage data. No agent action is required.
+* **Self-Reporting (Live IDE Mode):** When running inside VS Code Copilot or another IDE, agents should use the `record_timeline_event` tool to log significant actions that are not automatically captured by the tool bridge. This includes:
+  - Reading upstream artifacts or templates (event type: `template_read` or `artifact_read`)
+  - Invoking subagents (event type: `subagent_invoked` / `subagent_completed`)
+  - Performing research queries (event type: `research_query`)
+  - Any custom notable step (event type: `custom`)
+* **Capture Config:** The `timeline.capture_*` flags in config control which event categories are recorded. Agents do not need to check these flags — the timeline module respects them automatically.
+* **Viewing:** Use `/jumpstart.timeline` or `jumpstart-mode timeline` to view, query, export, or clear the timeline.
+* **No Deletion:** Timeline events are append-only. Agents must never delete or modify previous events.
 
 ---
 

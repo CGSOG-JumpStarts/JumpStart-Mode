@@ -110,6 +110,9 @@ npx jumpstart-mode --dry-run .
 
 # Overwrite existing files
 npx jumpstart-mode --force
+
+# Merge Jump Start blocks into existing AGENTS.md / CLAUDE.md
+npx jumpstart-mode . --conflict merge
 ```
 
 **Global Installation:**
@@ -126,8 +129,11 @@ jumpstart-mode ./my-project --name "My Project"
 - `--type <type>` — Set project type: `greenfield` or `brownfield` (auto-detected if omitted)
 - `--copilot` — Include GitHub Copilot integration files
 - `--force` — Overwrite existing files without prompting
+- `--conflict <mode>` — Conflict strategy: `skip`, `overwrite`, or `merge`
 - `--dry-run` — Show what would be installed without copying
 - `--help` — Display help information
+
+If your repository already has `AGENTS.md` or `CLAUDE.md`, use `--conflict merge` to preserve existing instructions while adding/updating the Jump Start block. Using `skip` for these files may cause assistant integration issues.
 
 **Alternative: Bash Installer**
 
@@ -238,7 +244,7 @@ npx jumpstart-mode upgrade --restore --dry-run
 
 | Command | Purpose |
 |---------|--------|
-| `/jumpstart.party` | Multi-agent roundtable discussion (Party Mode) |
+| `/jumpstart.pitcrew` | Multi-agent roundtable discussion (Pit Crew) |
 | `/jumpstart.status` | Show current workflow state and progress dashboard |
 | `/jumpstart.review` | Validate artifacts against templates |
 | `/jumpstart.verify` | Verify diagram syntax and structure |
@@ -287,7 +293,7 @@ Beyond the six core phase agents, Jump Start includes **16 advisory agents** tha
 |-------|---------|---------|
 | Adversary | `/jumpstart.adversary` | Stress-tests specs for violations, gaps, and ambiguities |
 | Peer Reviewer | `/jumpstart.reviewer` | Scores artifacts across completeness, consistency, clarity, feasibility |
-| Facilitator | `/jumpstart.party` | Orchestrates multi-agent roundtable discussions |
+| Facilitator | `/jumpstart.pitcrew` | Orchestrates multi-agent roundtable discussions |
 | UX Designer | `/jumpstart.ux-design` | Emotional response mapping, information architecture, accessibility |
 | Security Architect | `/jumpstart.security` | OWASP audits, trust boundaries, encryption review |
 | DevOps Engineer | `/jumpstart.deploy` | CI/CD pipelines, deployment plans, environment management |

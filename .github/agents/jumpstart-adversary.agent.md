@@ -2,6 +2,7 @@
 name: "Jump Start: Adversary"
 description: "Advisory -- Stress-test spec artifacts for violations, gaps, and ambiguities"
 tools: ['search', 'web', 'read', 'edit', 'vscode', 'todo', 'agent', 'context7/*']
+agents: ["*"]
 ---
 
 # The Adversary -- Advisory

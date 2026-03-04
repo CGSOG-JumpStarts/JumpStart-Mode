@@ -3,20 +3,31 @@
  *
  * Programmatic artifact approval / rejection without manually
  * editing Markdown checkboxes.
- *
- * Usage:
- *   npx jumpstart-mode approve [path] [--approver "Name"]
- *   npx jumpstart-mode reject  [path] --reason "Missing NFRs"
  */
 
-import { createRequire } from 'module';
-const require = createRequire(import.meta.url);
 const { readFileSync, writeFileSync, existsSync, mkdirSync, appendFileSync } = require('fs');
-const { join, dirname, basename, relative } = require('path');
+const { join, relative } = require('path');
+const { getWorkflowSettings, setWorkflowCurrentPhase } = require('./config-yaml.cjs');
 
-import { isArtifactApproved, getHandoff } from './handoff.js';
-import { loadState, saveState, updateState } from './state-store.js';
-import { now } from './timestamps.js';
+const AGENT_COMMANDS = {
+  scout: '/jumpstart.scout',
+  challenger: '/jumpstart.challenge',
+  analyst: '/jumpstart.analyze',
+  pm: '/jumpstart.plan',
+  architect: '/jumpstart.architect',
+  developer: '/jumpstart.build'
+};
+
+// ─── Timeline Hook ───────────────────────────────────────────────────────────
+let _timelineHook = null;
+
+/**
+ * Set the timeline instance for recording approval/rejection events.
+ * @param {object|null} timeline - Timeline instance with recordEvent() method.
+ */
+function setApproveTimelineHook(timeline) {
+  _timelineHook = timeline;
+}
 
 /**
  * Phase-to-artifact mapping (primary artifacts only).
@@ -30,14 +41,200 @@ const PHASE_ARTIFACT_MAP = {
   '4': null
 };
 
-/**
- * Auto-detect the current phase's primary artifact from state.
- * @param {object} [options]
- * @param {string} [options.root] - Project root
- * @param {string} [options.statePath] - Custom state path
- * @returns {{ phase: number|null, artifact_path: string|null, exists: boolean }}
- */
-export function detectCurrentArtifact(options = {}) {
+const PHASE_MAP = {
+  '-1': {
+    name: 'Scout',
+    next_phase: 0,
+    next_agent: 'challenger',
+    next_artifacts: ['specs/challenger-brief.md', 'specs/insights/challenger-brief-insights.md'],
+    next_context: ['.jumpstart/config.yaml', '.jumpstart/roadmap.md', 'specs/codebase-context.md']
+  },
+  '0': {
+    name: 'Challenger',
+    next_phase: 1,
+    next_agent: 'analyst',
+    next_artifacts: ['specs/product-brief.md', 'specs/insights/product-brief-insights.md'],
+    next_context: ['.jumpstart/config.yaml', '.jumpstart/roadmap.md', 'specs/challenger-brief.md']
+  },
+  '1': {
+    name: 'Analyst',
+    next_phase: 2,
+    next_agent: 'pm',
+    next_artifacts: ['specs/prd.md', 'specs/insights/prd-insights.md'],
+    next_context: ['.jumpstart/config.yaml', '.jumpstart/roadmap.md', 'specs/challenger-brief.md', 'specs/product-brief.md']
+  },
+  '2': {
+    name: 'PM',
+    next_phase: 3,
+    next_agent: 'architect',
+    next_artifacts: ['specs/architecture.md', 'specs/implementation-plan.md', 'specs/insights/architecture-insights.md'],
+    next_context: ['.jumpstart/config.yaml', '.jumpstart/roadmap.md', 'specs/challenger-brief.md', 'specs/product-brief.md', 'specs/prd.md']
+  },
+  '3': {
+    name: 'Architect',
+    next_phase: 4,
+    next_agent: 'developer',
+    next_artifacts: ['specs/insights/implementation-insights.md'],
+    next_context: ['.jumpstart/config.yaml', '.jumpstart/roadmap.md', 'specs/prd.md', 'specs/architecture.md', 'specs/implementation-plan.md']
+  },
+  '4': {
+    name: 'Developer',
+    next_phase: null,
+    next_agent: null,
+    next_artifacts: [],
+    next_context: []
+  }
+};
+
+function now() {
+  return new Date().toISOString();
+}
+
+function defaultState() {
+  return {
+    version: '1.0.0',
+    current_phase: null,
+    current_agent: null,
+    current_step: null,
+    last_completed_step: null,
+    active_artifacts: [],
+    approved_artifacts: [],
+    phase_history: [],
+    last_updated: null,
+    resume_context: {
+      tldr: null,
+      last_action: null,
+      next_action: null,
+      open_questions: [],
+      key_insights: [],
+      last_agent: null,
+      last_phase: null,
+      last_step: null,
+      timestamp: null
+    }
+  };
+}
+
+function normalizeState(state) {
+  const base = defaultState();
+  const merged = {
+    ...base,
+    ...(state || {}),
+  };
+
+  if (!Array.isArray(merged.active_artifacts)) merged.active_artifacts = [];
+  if (!Array.isArray(merged.approved_artifacts)) merged.approved_artifacts = [];
+  if (!Array.isArray(merged.phase_history)) merged.phase_history = [];
+  if (!merged.resume_context || typeof merged.resume_context !== 'object') {
+    merged.resume_context = base.resume_context;
+  }
+
+  return merged;
+}
+
+function loadState(statePath) {
+  if (!existsSync(statePath)) {
+    return defaultState();
+  }
+  try {
+    const parsed = JSON.parse(readFileSync(statePath, 'utf8'));
+    return normalizeState(parsed);
+  } catch {
+    return defaultState();
+  }
+}
+
+function saveState(state, statePath) {
+  state.last_updated = new Date().toISOString();
+  writeFileSync(statePath, JSON.stringify(state, null, 2) + '\n', 'utf8');
+  return { success: true };
+}
+
+function updateState(updates, statePath) {
+  const state = loadState(statePath);
+
+  if (updates.phase !== undefined) {
+    if (state.current_phase !== null && state.current_phase !== updates.phase) {
+      state.phase_history.push({
+        phase: state.current_phase,
+        agent: state.current_agent,
+        completed_at: new Date().toISOString()
+      });
+    }
+    state.current_phase = updates.phase;
+  }
+
+  if (updates.agent !== undefined) state.current_agent = updates.agent;
+  if (updates.step !== undefined) state.current_step = updates.step;
+  if (updates.last_completed_step !== undefined) state.last_completed_step = updates.last_completed_step;
+  if (updates.active_artifacts) state.active_artifacts = updates.active_artifacts;
+  if (updates.resume_context) state.resume_context = updates.resume_context;
+
+  if (updates.approved_artifact) {
+    if (!state.approved_artifacts.includes(updates.approved_artifact)) {
+      state.approved_artifacts.push(updates.approved_artifact);
+    }
+  }
+
+  saveState(state, statePath);
+  return { success: true, state };
+}
+
+function syncPhaseState(phase, options = {}) {
+  const root = options.root || process.cwd();
+  const statePath = options.statePath || join(root, '.jumpstart', 'state', 'state.json');
+  const configPath = options.configPath || join(root, '.jumpstart', 'config.yaml');
+
+  const updates = { phase };
+  if (options.agent !== undefined) {
+    updates.agent = options.agent;
+  }
+
+  const stateResult = updateState(updates, statePath);
+
+  try {
+    setWorkflowCurrentPhase(configPath, phase);
+  } catch (error) {
+    return {
+      success: false,
+      state: stateResult.state,
+      error: `Failed to sync workflow.current_phase in config.yaml: ${error.message}`,
+    };
+  }
+
+  return { success: true, state: stateResult.state };
+}
+
+function getHandoff(currentPhase) {
+  const key = String(currentPhase);
+  const transition = PHASE_MAP[key];
+
+  if (!transition) {
+    return { error: `Unknown phase: ${currentPhase}`, ready: false };
+  }
+
+  if (transition.next_phase === null) {
+    return {
+      current_phase: currentPhase,
+      next_phase: null,
+      next_agent: null,
+      message: 'Phase 4 is the final phase. No further handoff needed.',
+      ready: false
+    };
+  }
+
+  return {
+    current_phase: currentPhase,
+    current_name: transition.name,
+    next_phase: transition.next_phase,
+    next_agent: transition.next_agent,
+    artifacts_to_create: transition.next_artifacts,
+    context_files: transition.next_context,
+    ready: true
+  };
+}
+
+function detectCurrentArtifact(options = {}) {
   const root = options.root || process.cwd();
   const statePath = options.statePath || join(root, '.jumpstart', 'state', 'state.json');
   const state = loadState(statePath);
@@ -56,23 +253,13 @@ export function detectCurrentArtifact(options = {}) {
   return { phase, artifact_path: artifact, exists: existsSync(fullPath) };
 }
 
-/**
- * Approve an artifact by checking all gate checkboxes, setting approver,
- * date, and status, then updating workflow state.
- *
- * @param {string} filePath - Relative or absolute path to the artifact
- * @param {object} [options]
- * @param {string} [options.approver] - Approver name (default: "Human")
- * @param {string} [options.root] - Project root
- * @param {string} [options.statePath] - Custom state path
- * @returns {{ success: boolean, artifact: string, approver: string, date: string, handoff_info?: object, error?: string }}
- */
-export function approveArtifact(filePath, options = {}) {
+function approveArtifact(filePath, options = {}) {
   const root = options.root || process.cwd();
   const fullPath = filePath.startsWith('/') || filePath.includes(':') ? filePath : join(root, filePath);
   const relPath = relative(root, fullPath).replace(/\\/g, '/');
   const approver = options.approver || 'Human';
   const statePath = options.statePath || join(root, '.jumpstart', 'state', 'state.json');
+  const configPath = options.configPath || join(root, '.jumpstart', 'config.yaml');
 
   if (!existsSync(fullPath)) {
     return { success: false, error: `Artifact not found: ${filePath}` };
@@ -80,43 +267,63 @@ export function approveArtifact(filePath, options = {}) {
 
   let content = readFileSync(fullPath, 'utf8');
 
-  // Find the Phase Gate Approval section
   if (!/## Phase Gate Approval/i.test(content)) {
     return { success: false, error: 'No "## Phase Gate Approval" section found in artifact' };
   }
 
-  // Check all unchecked boxes
   content = content.replace(/- \[ \]/g, '- [x]');
+  content = content.replace(/(\*\*Approved by:\*\*)\s*.+/i, `$1 ${approver}`);
 
-  // Set Approved by
-  content = content.replace(
-    /(\*\*Approved by:\*\*)\s*.+/i,
-    `$1 ${approver}`
-  );
-
-  // Set Approval date
-  const dateStr = now().split('T')[0]; // YYYY-MM-DD
-  content = content.replace(
-    /(\*\*Approval date:\*\*)\s*.+/i,
-    `$1 ${dateStr}`
-  );
-
-  // Set Status to Approved
-  content = content.replace(
-    /(\*\*Status:\*\*)\s*.+/i,
-    '$1 Approved'
-  );
+  const dateStr = now().split('T')[0];
+  content = content.replace(/(\*\*Approval date:\*\*)\s*.+/i, `$1 ${dateStr}`);
+  content = content.replace(/(\*\*Status:\*\*)\s*.+/i, '$1 Approved');
 
   writeFileSync(fullPath, content, 'utf8');
 
-  // Update state
   updateState({ approved_artifact: relPath }, statePath);
 
-  // Get handoff info for next phase
+  // Record approval in timeline
+  if (_timelineHook) {
+    _timelineHook.recordEvent({
+      event_type: 'approval',
+      action: `Artifact approved: ${relPath}`,
+      metadata: { artifact_path: relPath, approver, date: dateStr }
+    });
+  }
   const state = loadState(statePath);
   let handoffInfo = null;
+  let autoHandoff = {
+    enabled: false,
+    advanced: false,
+    command: null,
+    warning: null,
+  };
+
+  try {
+    const settings = getWorkflowSettings(configPath);
+    autoHandoff.enabled = settings.auto_handoff !== false;
+  } catch {
+    autoHandoff.warning = 'Could not read workflow settings from config.yaml; auto-handoff skipped.';
+  }
+
   if (state.current_phase !== null && state.current_phase !== undefined) {
     handoffInfo = getHandoff(state.current_phase);
+
+    if (autoHandoff.enabled && handoffInfo && handoffInfo.ready) {
+      const syncResult = syncPhaseState(handoffInfo.next_phase, {
+        root,
+        statePath,
+        configPath,
+        agent: handoffInfo.next_agent,
+      });
+
+      if (syncResult.success) {
+        autoHandoff.advanced = true;
+        autoHandoff.command = AGENT_COMMANDS[handoffInfo.next_agent] || null;
+      } else {
+        autoHandoff.warning = syncResult.error || 'Unable to sync phase progression.';
+      }
+    }
   }
 
   return {
@@ -124,22 +331,12 @@ export function approveArtifact(filePath, options = {}) {
     artifact: relPath,
     approver,
     date: dateStr,
-    handoff_info: handoffInfo
+    handoff_info: handoffInfo,
+    auto_handoff: autoHandoff
   };
 }
 
-/**
- * Reject an artifact by unchecking all gate checkboxes, resetting status
- * to Draft, and logging the rejection reason.
- *
- * @param {string} filePath - Relative or absolute path to the artifact
- * @param {object} [options]
- * @param {string} [options.reason] - Rejection reason (required)
- * @param {string} [options.root] - Project root
- * @param {string} [options.statePath] - Custom state path
- * @returns {{ success: boolean, artifact: string, reason: string, logged_to: string|null, error?: string }}
- */
-export function rejectArtifact(filePath, options = {}) {
+function rejectArtifact(filePath, options = {}) {
   const root = options.root || process.cwd();
   const fullPath = filePath.startsWith('/') || filePath.includes(':') ? filePath : join(root, filePath);
   const relPath = relative(root, fullPath).replace(/\\/g, '/');
@@ -152,40 +349,29 @@ export function rejectArtifact(filePath, options = {}) {
 
   let content = readFileSync(fullPath, 'utf8');
 
-  // Find the Phase Gate Approval section
   if (!/## Phase Gate Approval/i.test(content)) {
     return { success: false, error: 'No "## Phase Gate Approval" section found in artifact' };
   }
 
-  // Uncheck all boxes
   content = content.replace(/- \[x\]/gi, '- [ ]');
-
-  // Reset Approved by to Pending
-  content = content.replace(
-    /(\*\*Approved by:\*\*)\s*.+/i,
-    '$1 Pending'
-  );
-
-  // Reset Approval date to Pending
-  content = content.replace(
-    /(\*\*Approval date:\*\*)\s*.+/i,
-    '$1 Pending'
-  );
-
-  // Reset Status to Draft
-  content = content.replace(
-    /(\*\*Status:\*\*)\s*.+/i,
-    '$1 Draft'
-  );
+  content = content.replace(/(\*\*Approved by:\*\*)\s*.+/i, '$1 Pending');
+  content = content.replace(/(\*\*Approval date:\*\*)\s*.+/i, '$1 Pending');
+  content = content.replace(/(\*\*Status:\*\*)\s*.+/i, '$1 Draft');
 
   writeFileSync(fullPath, content, 'utf8');
 
-  // Remove from approved_artifacts in state
   const state = loadState(statePath);
   state.approved_artifacts = (state.approved_artifacts || []).filter(a => a !== relPath);
   saveState(state, statePath);
 
-  // Log rejection to insights
+  // Record rejection in timeline
+  if (_timelineHook) {
+    _timelineHook.recordEvent({
+      event_type: 'rejection',
+      action: `Artifact rejected: ${relPath}`,
+      metadata: { artifact_path: relPath, reason }
+    });
+  }
   let loggedTo = null;
   try {
     const insightsDir = join(root, 'specs', 'insights');
@@ -203,7 +389,6 @@ export function rejectArtifact(filePath, options = {}) {
       appendFileSync(logFile, entry, 'utf8');
     }
   } catch {
-    // Non-fatal — log failure is okay
   }
 
   return {
@@ -214,12 +399,7 @@ export function rejectArtifact(filePath, options = {}) {
   };
 }
 
-/**
- * Render human-readable approval result.
- * @param {object} result
- * @returns {string}
- */
-export function renderApprovalResult(result) {
+function renderApprovalResult(result) {
   if (!result.success) {
     return `\n  ❌ Approval failed: ${result.error}\n`;
   }
@@ -233,19 +413,28 @@ export function renderApprovalResult(result) {
   if (result.handoff_info && result.handoff_info.ready) {
     lines.push('');
     lines.push(`  ▶ Next: Phase ${result.handoff_info.next_phase} — ${result.handoff_info.next_agent}`);
-    lines.push(`    Run /jumpstart.next to continue`);
+    if (result.auto_handoff && result.auto_handoff.advanced) {
+      lines.push('    Auto-advanced phase state.');
+      if (result.auto_handoff.command) {
+        lines.push(`    Start next agent: ${result.auto_handoff.command}`);
+      } else {
+        lines.push('    Start next agent using your phase command.');
+      }
+    } else {
+      lines.push('    Run /jumpstart.next to continue');
+    }
+  }
+
+  if (result.auto_handoff && result.auto_handoff.warning) {
+    lines.push('');
+    lines.push(`  ⚠ ${result.auto_handoff.warning}`);
   }
 
   lines.push('');
   return lines.join('\n');
 }
 
-/**
- * Render human-readable rejection result.
- * @param {object} result
- * @returns {string}
- */
-export function renderRejectionResult(result) {
+function renderRejectionResult(result) {
   if (!result.success) {
     return `\n  ❌ Rejection failed: ${result.error}\n`;
   }
@@ -263,7 +452,13 @@ export function renderRejectionResult(result) {
   return lines.join('\n');
 }
 
-// CLI mode
+exports.detectCurrentArtifact = detectCurrentArtifact;
+exports.approveArtifact = approveArtifact;
+exports.rejectArtifact = rejectArtifact;
+exports.renderApprovalResult = renderApprovalResult;
+exports.renderRejectionResult = renderRejectionResult;
+exports.setApproveTimelineHook = setApproveTimelineHook;
+
 if (process.argv[1] && process.argv[1].endsWith('approve.js')) {
   let input = '';
   process.stdin.setEncoding('utf8');

@@ -227,6 +227,59 @@ const ALL_TOOLS = [
         required: ['itemId']
       }
     }
+  },
+  // ─── Timeline Event Recording ──────────────────────────────────────────────
+  {
+    type: 'function',
+    function: {
+      name: 'record_timeline_event',
+      description: 'Record an event to the Jump Start interaction timeline. Use this to log significant actions such as reading a template, writing an artifact, invoking a subagent, performing research, or any other notable step during your workflow.',
+      parameters: {
+        type: 'object',
+        properties: {
+          event_type: {
+            type: 'string',
+            enum: [
+              'phase_start', 'phase_end', 'tool_call', 'tool_result',
+              'file_read', 'file_write', 'template_read',
+              'artifact_write', 'artifact_read',
+              'question_asked', 'question_answered',
+              'approval', 'rejection',
+              'subagent_invoked', 'subagent_completed',
+              'llm_turn_start', 'llm_turn_end',
+              'research_query', 'checkpoint_created', 'rewind',
+              'handoff', 'usage_logged', 'custom'
+            ],
+            description: 'The type of event being recorded.'
+          },
+          action: {
+            type: 'string',
+            description: 'A short, human-readable description of the action (e.g. "Read challenger-brief.md template", "Invoked Security subagent").'
+          },
+          metadata: {
+            type: 'object',
+            description: 'Arbitrary key-value metadata for the event (e.g. { "file": "specs/architecture.md", "subagent": "Security", "query": "OWASP top 10" }).'
+          },
+          phase: {
+            type: 'string',
+            description: 'Override the current phase context (usually auto-detected).'
+          },
+          agent: {
+            type: 'string',
+            description: 'Override the current agent context (usually auto-detected).'
+          },
+          parent_agent: {
+            type: 'string',
+            description: 'When recording a subagent event, the parent agent that invoked it.'
+          },
+          duration_ms: {
+            type: 'number',
+            description: 'Duration of the action in milliseconds, if known.'
+          }
+        },
+        required: ['event_type', 'action']
+      }
+    }
   }
 ];
 
@@ -236,7 +289,7 @@ const ALL_TOOLS = [
 const BASE_TOOLS = [
   'read_file', 'create_file', 'replace_string_in_file', 'list_dir',
   'file_search', 'grep_search', 'semantic_search',
-  'ask_questions', 'manage_todo_list'
+  'ask_questions', 'manage_todo_list', 'record_timeline_event'
 ];
 
 /** Additional tools unlocked per phase */

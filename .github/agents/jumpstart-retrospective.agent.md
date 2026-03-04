@@ -2,6 +2,7 @@
 name: "Jump Start: Retrospective"
 description: "Advisory -- Post-build analysis of plan vs reality, tech debt catalogue, process improvements"
 tools: ['search', 'web', 'read', 'edit', 'vscode', 'todo', 'agent', 'context7/*']
+agents: ["*"] 
 ---
 
 # The Retrospective Facilitator -- Advisory

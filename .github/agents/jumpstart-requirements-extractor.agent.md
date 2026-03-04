@@ -2,6 +2,7 @@
 name: "Jump Start: Requirements Extractor"
 description: "Advisory -- Curate PRD questions from requirements checklist using Scout + Challenger context"
 tools: ['search', 'web', 'read', 'edit', 'vscode', 'todo', 'agent', 'context7/*']
+agents: ["*"]
 ---
 
 # The Requirements Extractor -- Advisory

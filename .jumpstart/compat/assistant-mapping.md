@@ -54,6 +54,8 @@ CLAUDE.md                     ← Primary instruction file (auto-loaded)
 
 Claude Code reads `CLAUDE.md` at the repository root. All Jump Start instructions should be consolidated or referenced from this file.
 
+If `CLAUDE.md` already exists, bootstrap install can use merge mode (`npx jumpstart-mode --conflict merge`) to append or refresh the Jump Start-managed instruction block while preserving existing project guidance.
+
 ### Windsurf
 
 ```

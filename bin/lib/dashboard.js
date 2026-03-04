@@ -261,6 +261,16 @@ export async function gatherDashboardData(options = {}) {
   // ─── Graph coverage ───────────────────────────────────────────────────
   const graphCoverage = getGraphCoverage(root);
 
+  // ─── Timeline summary ─────────────────────────────────────────────────
+  let timelineSummary = null;
+  try {
+    const timelinePath = path.join(root, '.jumpstart', 'state', 'timeline.json');
+    if (fs.existsSync(timelinePath)) {
+      const { getTimelineSummary } = await import('./timeline.js');
+      timelineSummary = getTimelineSummary(timelinePath);
+    }
+  } catch { /* timeline module not available or no data */ }
+
   return {
     phases,
     current: {
@@ -289,7 +299,14 @@ export async function gatherDashboardData(options = {}) {
       command: nextAction.command,
       message: nextAction.message
     },
-    project_type: projectType
+    project_type: projectType,
+    timeline: timelineSummary ? {
+      session_id: timelineSummary.session_id,
+      total_events: timelineSummary.total_events,
+      duration_s: timelineSummary.duration_s,
+      by_type: timelineSummary.by_type,
+      by_phase: timelineSummary.by_phase
+    } : null
   };
 }
 
@@ -410,6 +427,19 @@ export function renderDashboardText(data) {
   if (data.usage) {
     lines.push(chalk.bold('  Token Usage: ') + chalk.gray(`${data.usage.total_tokens.toLocaleString()} tokens`) +
       (data.usage.total_cost ? chalk.gray(` ($${data.usage.total_cost.toFixed(2)})`) : ''));
+    lines.push('');
+  }
+
+  // ─── Timeline ──────────────────────────────────────────────────────
+  if (data.timeline && data.timeline.total_events > 0) {
+    lines.push(chalk.bold('  Timeline: ') + chalk.gray(`${data.timeline.total_events} events`) +
+      (data.timeline.duration_s ? chalk.gray(` over ${Math.round(data.timeline.duration_s)}s`) : ''));
+    if (data.timeline.by_phase && Object.keys(data.timeline.by_phase).length > 0) {
+      const phaseEntries = Object.entries(data.timeline.by_phase).slice(0, 5);
+      for (const [p, c] of phaseEntries) {
+        lines.push(chalk.gray(`    ${p}: ${c} events`));
+      }
+    }
     lines.push('');
   }
 

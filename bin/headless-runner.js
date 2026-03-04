@@ -182,6 +182,28 @@ class HeadlessRunner {
     // Initialize tracer
     this.tracer = new SimulationTracer(this.workspaceDir, options.scenario || 'headless');
     
+    // Initialize timeline for event recording
+    this.timeline = null;
+    try {
+      // Dynamic import since timeline.js is ESM
+      this._timelineReady = import('./lib/timeline.js').then(mod => {
+        this.timeline = mod.createTimeline({
+          filePath: path.join(this.workspaceDir, '.jumpstart', 'state', 'timeline.json'),
+          enabled: true,
+          captureToolCalls: true,
+          captureFileReads: true,
+          captureFileWrites: true,
+          captureLLMTurns: true,
+          captureQuestions: true,
+          captureApprovals: true,
+          captureSubagents: true,
+          captureResearch: true
+        });
+      }).catch(() => { /* timeline module not available — ok */ });
+    } catch {
+      this._timelineReady = Promise.resolve();
+    }
+    
     // Initialize mock registry if in mock mode
     this.mockRegistry = options.mock 
       ? createPersonaRegistry(options.persona)
@@ -212,6 +234,9 @@ class HeadlessRunner {
   }
   
   async setup() {
+    // Ensure timeline is ready
+    if (this._timelineReady) await this._timelineReady;
+    
     // Create workspace directory structure
     const dirs = [
       this.workspaceDir,
@@ -323,6 +348,7 @@ class HeadlessRunner {
       workspaceDir: this.workspaceDir,
       tracer: this.tracer,
       dryRun: this.options.dryRun,
+      timeline: this.timeline,
       onUserProxyCall: this.options.mock 
         ? null  // Use default mock behavior
         : (args) => this.callUserProxy(args)
@@ -384,6 +410,20 @@ Be brief and supportive.`;
     // Log to tracer
     if (this.tracer.logUserProxyExchange) {
       this.tracer.logUserProxyExchange(askQuestionsArgs, proxyAnswer);
+    }
+    
+    // Log to timeline
+    if (this.timeline) {
+      this.timeline.recordEvent({
+        event_type: 'question_asked',
+        action: `Agent asked: ${askQuestionsArgs.questions.map(q => q.header).join(', ')}`,
+        metadata: { questions: askQuestionsArgs.questions }
+      });
+      this.timeline.recordEvent({
+        event_type: 'question_answered',
+        action: `User proxy answered`,
+        metadata: { answers: proxyAnswer }
+      });
     }
     
     // Parse proxy answer into structured format
@@ -460,6 +500,17 @@ Be brief and supportive.`;
     
     this.tracer.startPhase(agentName);
     
+    // Set timeline context for this agent
+    if (this.timeline) {
+      this.timeline.setPhase(agentName);
+      this.timeline.setAgent(agentName);
+      this.timeline.recordEvent({
+        event_type: 'phase_start',
+        action: `Phase started: ${agentName}`,
+        metadata: { model: this.options.model, persona: this.options.persona }
+      });
+    }
+    
     // Initialize providers for this agent
     await this.initializeProviders(agentName);
     
@@ -493,6 +544,15 @@ Be brief and supportive.`;
       this.log(`Turn ${this.turnCount}/${this.options.maxTurns}`, 'debug');
       
       try {
+        // Record LLM turn start
+        if (this.timeline) {
+          this.timeline.recordEvent({
+            event_type: 'llm_turn_start',
+            action: `LLM turn ${this.turnCount} started`,
+            metadata: { turn: this.turnCount, model: this.options.model, max_turns: this.options.maxTurns }
+          });
+        }
+        
         // Call agent LLM
         const response = await this.agentProvider.completion(
           this.conversationHistory,
@@ -501,6 +561,21 @@ Be brief and supportive.`;
         
         const message = response.choices[0].message;
         this.conversationHistory.push(message);
+        
+        // Record LLM turn end
+        if (this.timeline) {
+          const usage = response.usage || {};
+          this.timeline.recordEvent({
+            event_type: 'llm_turn_end',
+            action: `LLM turn ${this.turnCount} completed`,
+            metadata: {
+              turn: this.turnCount,
+              prompt_tokens: usage.prompt_tokens || 0,
+              completion_tokens: usage.completion_tokens || 0,
+              has_tool_calls: !!(message.tool_calls && message.tool_calls.length > 0)
+            }
+          });
+        }
         
         // Handle tool calls
         if (message.tool_calls && message.tool_calls.length > 0) {
@@ -534,6 +609,16 @@ Be brief and supportive.`;
     }
     
     this.tracer.endPhase(agentName, finalStatus);
+    
+    // Record phase end in timeline
+    if (this.timeline) {
+      this.timeline.recordEvent({
+        event_type: 'phase_end',
+        action: `Phase ended: ${agentName} — ${finalStatus}`,
+        metadata: { status: finalStatus, turns: this.turnCount }
+      });
+      this.timeline.flush();
+    }
     
     // Log usage
     const usage = this.agentProvider.getUsage();
@@ -610,6 +695,11 @@ Be brief and supportive.`;
     
     fs.writeFileSync(reportPath, JSON.stringify(report, null, 2));
     this.log(`Report saved: ${reportPath}`, 'success');
+    
+    // End timeline session
+    if (this.timeline) {
+      this.timeline.endSession();
+    }
     
     // Summary
     const passed = Object.values(results).filter(r => r === 'PASS').length;

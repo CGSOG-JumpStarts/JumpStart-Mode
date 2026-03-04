@@ -17,8 +17,22 @@ import { createRequire } from 'module';
 const require = createRequire(import.meta.url);
 const { readFileSync, writeFileSync, mkdirSync, existsSync } = require('fs');
 const { join, dirname } = require('path');
+const { setWorkflowCurrentPhase } = require('./config-yaml.cjs');
 
 const DEFAULT_STATE_PATH = '.jumpstart/state/state.json';
+
+// ─── Timeline Hook ───────────────────────────────────────────────────────────
+// Allows external callers (headless runner, CLI) to inject a timeline instance
+// for recording state change events without creating a hard module dependency.
+let _timelineHook = null;
+
+/**
+ * Set the timeline instance for recording state events.
+ * @param {object|null} timeline - Timeline instance with recordEvent() method.
+ */
+export function setTimelineHook(timeline) {
+  _timelineHook = timeline;
+}
 
 /**
  * Default state structure.
@@ -100,6 +114,24 @@ export function updateState(updates, statePath) {
         agent: state.current_agent,
         completed_at: new Date().toISOString()
       });
+      
+      // Record phase transition in timeline
+      if (_timelineHook) {
+        _timelineHook.recordEvent({
+          event_type: 'phase_end',
+          phase: state.current_phase,
+          agent: state.current_agent,
+          action: `Phase ${state.current_phase} completed (${state.current_agent || 'unknown'})`,
+          metadata: { previous_phase: state.current_phase, new_phase: updates.phase }
+        });
+        _timelineHook.recordEvent({
+          event_type: 'phase_start',
+          phase: updates.phase,
+          agent: updates.agent || null,
+          action: `Phase ${updates.phase} started`,
+          metadata: { previous_phase: state.current_phase }
+        });
+      }
     }
     state.current_phase = updates.phase;
   }
@@ -118,6 +150,43 @@ export function updateState(updates, statePath) {
 
   saveState(state, statePath);
   return { success: true, state };
+}
+
+/**
+ * Synchronize active phase into both state.json and config.yaml.
+ * Keeps dual phase sources aligned for CLI/runtime consumers.
+ *
+ * @param {number} phase - Phase value to persist
+ * @param {object} [options]
+ * @param {string} [options.root] - Project root
+ * @param {string} [options.statePath] - Path to state file
+ * @param {string} [options.configPath] - Path to config.yaml
+ * @param {string|null} [options.agent] - Optional active agent to set in state
+ * @returns {{ success: boolean, state?: object, error?: string }}
+ */
+export function syncPhaseState(phase, options = {}) {
+  const root = options.root || process.cwd();
+  const statePath = options.statePath || join(root, '.jumpstart', 'state', 'state.json');
+  const configPath = options.configPath || join(root, '.jumpstart', 'config.yaml');
+
+  const updates = { phase };
+  if (options.agent !== undefined) {
+    updates.agent = options.agent;
+  }
+
+  const stateResult = updateState(updates, statePath);
+
+  try {
+    setWorkflowCurrentPhase(configPath, phase);
+  } catch (error) {
+    return {
+      success: false,
+      state: stateResult.state,
+      error: `Failed to sync workflow.current_phase in config.yaml: ${error.message}`,
+    };
+  }
+
+  return { success: true, state: stateResult.state };
 }
 
 /**
@@ -182,6 +251,17 @@ export function createCheckpoint(label, options = {}) {
 
   state.checkpoints.push(checkpoint);
 
+  // Record checkpoint in timeline
+  if (_timelineHook) {
+    _timelineHook.recordEvent({
+      event_type: 'checkpoint_created',
+      phase: state.current_phase,
+      agent: state.current_agent,
+      action: `Checkpoint created: ${label || 'auto'}`,
+      metadata: { checkpoint_id: checkpoint.id, checkpoint_label: checkpoint.label }
+    });
+  }
+
   // Prune old checkpoints
   if (state.checkpoints.length > maxCheckpoints) {
     state.checkpoints = state.checkpoints.slice(-maxCheckpoints);
@@ -218,6 +298,17 @@ export function restoreCheckpoint(checkpointId, statePath) {
   state.approved_artifacts = [...(checkpoint.approved_artifacts || [])];
   state.resume_context = checkpoint.resume_context ? { ...checkpoint.resume_context } : null;
   state.last_completed_step = null;
+
+  // Record rewind in timeline
+  if (_timelineHook) {
+    _timelineHook.recordEvent({
+      event_type: 'rewind',
+      phase: checkpoint.phase,
+      agent: checkpoint.agent,
+      action: `Restored to checkpoint: ${checkpoint.label} (${checkpointId})`,
+      metadata: { checkpoint_id: checkpointId, target_phase_for_rewind: checkpoint.phase }
+    });
+  }
 
   saveState(state, path);
   return { success: true, restored_from: checkpoint };

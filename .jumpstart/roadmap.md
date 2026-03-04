@@ -219,7 +219,7 @@ All agents must support the framework's workflow orchestration capabilities:
 2. **Human-in-the-Loop Checkpoints:** At high-impact decision points, agents must pause and present a structured checkpoint (`.jumpstart/templates/wait-checkpoint.md`) for human review before proceeding. Agents must never auto-continue past a checkpoint.
 3. **State Persistence:** Workflow state is persisted to `.jumpstart/state/state.json`. Agents must update state after completing protocol steps, enabling resume-from-checkpoint after interruptions.
 4. **Auto-Handoff:** After artifact approval, the framework automatically initialises the next phase's context. Agents must verify approval markers before transitioning.
-5. **Conflict Detection:** When multiple agents may operate concurrently (e.g., Party Mode), agents must acquire file locks before writing to shared artifacts and release them when done.
+5. **Conflict Detection:** When multiple agents may operate concurrently (e.g., Pit Crew), agents must acquire file locks before writing to shared artifacts and release them when done.
 6. **Quick Flow:** Minor changes (≤5 files, ≤200 LOC) may use the abbreviated Quick Flow path (`/jumpstart.quick`) instead of the full 5-phase workflow, subject to scope guard validation.
 7. **Rollback Safety:** Before overwriting any approved artifact, the framework archives the current version to `.jumpstart/archive/` with timestamp and metadata.
 

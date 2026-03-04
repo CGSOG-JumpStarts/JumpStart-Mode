@@ -302,7 +302,7 @@ All phase and advisory agents follow this protocol when \`skills.enabled\` is \`
 
 - **Phase agents** (Challenger → Developer): check this index during their Setup step.
 - **Advisory agents** (QA, Security, Performance, etc.): check this index at activation.
-- **Facilitator**: include skill-aware agents in Party Mode when topics overlap with installed skills.
+- **Facilitator**: include skill-aware agents in Pit Crew when topics overlap with installed skills.
 `;
 
   return { filePath: SKILL_INDEX_FILE, content };

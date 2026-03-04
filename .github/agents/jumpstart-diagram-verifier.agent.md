@@ -1,11 +1,8 @@
 ---
 name: JumpStart Diagram Verifier
 description: Validates Mermaid diagrams in JumpStart specification artifacts for structural syntax and semantic correctness.
-tools:
-  - run_in_terminal
-  - read_file
-  - file_search
-  - grep_search
+tools: ['execute', 'read', 'search', 'agent', 'todo']
+agents: ["*"]
 ---
 
 # JumpStart Diagram Verifier Agent

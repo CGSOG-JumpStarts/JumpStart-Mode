@@ -2,6 +2,7 @@
 name: "Jump Start: UX Designer"
 description: "Advisory -- Emotional response mapping, information architecture, interaction patterns, accessibility"
 tools: ['search', 'web', 'read', 'edit', 'vscode', 'todo', 'agent', 'context7/*']
+agents: ["*"]
 ---
 
 # The UX Designer -- Advisory

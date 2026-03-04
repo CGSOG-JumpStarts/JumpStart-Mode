@@ -311,10 +311,10 @@ agents:
   facilitator:
     persona_file: "agents/facilitator.md"
     capture_insights: true
-    # Multi-agent Party Mode advisory discussions
-    # Outputs: specs/party-session-{topic}.md
-    max_rounds: 3                       # Maximum discussion rounds per party session
-    default_agents:                     # Default agents invited to party sessions
+    # Multi-agent Pit Crew advisory discussions
+    # Outputs: specs/pitcrew-session-{topic}.md
+    max_rounds: 3                       # Maximum discussion rounds per pitcrew session
+    default_agents:                     # Default agents invited to pitcrew sessions
       - adversary
       - researcher
       - security
@@ -556,3 +556,24 @@ design_system:
 self_evolve:
   enabled: false                   # Set to true to enable self-evolve analysis
   auto_propose: false              # Auto-generate proposals at phase gates
+
+# ---------------------------------------------------------------------------
+# Timeline — Agent Interaction Recording (Item 102)
+# ---------------------------------------------------------------------------
+# Records all agent/subagent interactions, tool calls, template reads,
+# artifact writes, questions, approvals, research queries, and LLM turns
+# as a chronological timeline for full replay and analysis.
+timeline:
+  enabled: true                            # Master switch for timeline recording
+  events_file: ".jumpstart/state/timeline.json"  # Path to timeline events file
+  capture_tool_calls: true                 # Record tool call/result events
+  capture_file_reads: true                 # Record file read events
+  capture_file_writes: true                # Record file write events
+  capture_llm_turns: true                  # Record LLM turn start/end events
+  capture_questions: true                  # Record question asked/answered events
+  capture_approvals: true                  # Record approval/rejection events
+  capture_subagents: true                  # Record subagent invocation events
+  capture_research: true                   # Record research query events
+  max_events: 50000                        # Max events before oldest are pruned
+  flush_interval: 5                        # Flush buffered events to disk every N events
+  archive_on_clear: true                   # Archive timeline before clearing

@@ -3,6 +3,9 @@
  *
  * Records phases, LLM calls, tool interceptions, and user proxy exchanges
  * during headless agent runs. Produces structured reports for analysis.
+ *
+ * When a timeline instance is attached via setTimeline(), events are also
+ * forwarded to the timeline module for unified interaction recording.
  */
 
 'use strict';
@@ -20,6 +23,17 @@ class SimulationTracer {
     this.transcript = [];
     this.llmCalls = [];
     this.toolInterceptionCount = 0;
+    /** @type {import('./timeline.js').Timeline|null} */
+    this._timeline = null;
+  }
+
+  /**
+   * Attach a timeline instance for event delegation.
+   * When set, all tracer events are also recorded to the timeline.
+   * @param {import('./timeline.js').Timeline} timeline
+   */
+  setTimeline(timeline) {
+    this._timeline = timeline;
   }
 
   /**
@@ -37,6 +51,10 @@ class SimulationTracer {
       llmCalls: 0
     };
     this.phases.push(this.currentPhase);
+    if (this._timeline) {
+      this._timeline.setPhase(name);
+      this._timeline.recordEvent({ event_type: 'phase_start', action: `Phase started: ${name}`, metadata: { phase: name } });
+    }
   }
 
   /**
@@ -48,6 +66,14 @@ class SimulationTracer {
     if (this.currentPhase && this.currentPhase.name === name) {
       this.currentPhase.status = status;
       this.currentPhase.endTime = Date.now();
+      if (this._timeline) {
+        this._timeline.recordEvent({
+          event_type: 'phase_end',
+          action: `Phase ended: ${name} (${status})`,
+          metadata: { phase: name, status },
+          duration_ms: this.currentPhase.endTime - this.currentPhase.startTime
+        });
+      }
     }
   }
 
@@ -58,6 +84,9 @@ class SimulationTracer {
   logArtifact(artifactName) {
     if (this.currentPhase) {
       this.currentPhase.artifacts.push(artifactName);
+    }
+    if (this._timeline) {
+      this._timeline.recordEvent({ event_type: 'artifact_write', action: `Artifact created: ${artifactName}`, metadata: { file: artifactName } });
     }
   }
 
@@ -81,6 +110,13 @@ class SimulationTracer {
     if (this.currentPhase) {
       this.currentPhase.llmCalls++;
     }
+    if (this._timeline) {
+      this._timeline.recordEvent({
+        event_type: 'llm_turn_end',
+        action: `LLM call: ${model}`,
+        metadata: { model, prompt_tokens: promptTokens, completion_tokens: completionTokens, cost_usd: cost || 0 }
+      });
+    }
   }
 
   /**
@@ -102,6 +138,13 @@ class SimulationTracer {
     if (this.currentPhase) {
       this.currentPhase.toolCalls++;
     }
+    if (this._timeline) {
+      this._timeline.recordEvent({
+        event_type: 'tool_call',
+        action: `Tool: ${toolName}`,
+        metadata: { tool: toolName, args_keys: args ? Object.keys(args) : [] }
+      });
+    }
   }
 
   /**
@@ -120,6 +163,10 @@ class SimulationTracer {
       data: answer,
       timestamp: Date.now()
     });
+    if (this._timeline) {
+      this._timeline.recordEvent({ event_type: 'question_asked', action: 'User proxy question', metadata: { question_count: questionArgs?.questions?.length || 1 } });
+      this._timeline.recordEvent({ event_type: 'question_answered', action: 'User proxy response', metadata: { answer_preview: typeof answer === 'string' ? answer.slice(0, 200) : '(object)' } });
+    }
   }
 
   /**

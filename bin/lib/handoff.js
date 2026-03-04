@@ -29,6 +29,17 @@ import { createRequire } from 'module';
 const require = createRequire(import.meta.url);
 const { existsSync } = require('fs');
 
+// ─── Timeline Hook ───────────────────────────────────────────────────────────
+let _timelineHook = null;
+
+/**
+ * Set the timeline instance for recording handoff events.
+ * @param {object|null} timeline - Timeline instance with recordEvent() method.
+ */
+export function setHandoffTimelineHook(timeline) {
+  _timelineHook = timeline;
+}
+
 /**
  * Phase transition map.
  * Each phase defines what artifacts and context the next phase needs.
@@ -136,6 +147,31 @@ export function getHandoff(currentPhase) {
     context_files: transition.next_context,
     ready: true
   };
+}
+
+/**
+ * Execute a handoff and record it in the timeline.
+ * @param {number} currentPhase
+ * @returns {object} Handoff result.
+ */
+export function executeHandoff(currentPhase) {
+  const result = getHandoff(currentPhase);
+  
+  if (result.ready && _timelineHook) {
+    _timelineHook.recordEvent({
+      event_type: 'handoff',
+      phase: currentPhase,
+      action: `Handoff: Phase ${currentPhase} (${result.current_name}) → Phase ${result.next_phase} (${result.next_agent})`,
+      metadata: {
+        source_phase: currentPhase,
+        target_phase: result.next_phase,
+        next_agent: result.next_agent,
+        context_files: result.context_files
+      }
+    });
+  }
+  
+  return result;
 }
 
 // CLI mode

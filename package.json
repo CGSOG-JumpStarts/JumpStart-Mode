@@ -1,6 +1,6 @@
 {
   "name": "jumpstart-mode",
-  "version": "1.1.9",
+  "version": "1.1.10",
   "description": "Spec-driven agentic engineering framework that transforms ideas into production code through AI-powered sequential phases",
   "keywords": [
     "jumpstart",
@@ -58,10 +58,11 @@
     "chalk": "^4.1.2",
     "dotenv": "^17.3.1",
     "openai": "^6.23.0",
-    "prompts": "^2.4.2"
+    "prompts": "^2.4.2",
+    "yaml": "^2.8.1"
   },
   "devDependencies": {
-    "vitest": "^4.0.18"
+    "vitest": "^3.2.4"
   },
   "engines": {
     "node": ">=14.0.0"

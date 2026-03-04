@@ -5,12 +5,14 @@ const path = require('path');
 const chalk = require('chalk');
 const prompts = require('prompts');
 const { setupContext7 } = require('./context7-setup');
+const { updateBootstrapAnswers } = require('./lib/config-yaml.cjs');
 
 // Get the package root directory (where .jumpstart/ lives)
 const PACKAGE_ROOT = path.join(__dirname, '..');
 
 // Files and directories to copy
 const INTEGRATION_FILES = ['AGENTS.md', 'CLAUDE.md', '.cursorrules'];
+const MERGEABLE_INTEGRATION_FILES = ['AGENTS.md', 'CLAUDE.md'];
 const JUMPSTART_DIR = '.jumpstart';
 const GITHUB_DIR = '.github';
 const SPEC_DIRS = ['specs/decisions', 'specs/research', 'specs/insights'];
@@ -28,7 +30,8 @@ function parseArgs() {
     dryRun: false,
     help: false,
     interactive: true,
-    projectType: null  // greenfield | brownfield | null (auto-detect)
+    projectType: null,  // greenfield | brownfield | null (auto-detect)
+    conflictStrategy: 'skip' // skip | overwrite | merge
   };
 
   for (let i = 0; i < args.length; i++) {
@@ -48,9 +51,22 @@ function parseArgs() {
       config.interactive = false;
     } else if (arg === '--force') {
       config.force = true;
+      config.conflictStrategy = 'overwrite';
       config.interactive = false;
     } else if (arg === '--dry-run') {
       config.dryRun = true;
+      config.interactive = false;
+    } else if (arg === '--conflict') {
+      const strategy = args[++i];
+      if (strategy === 'skip' || strategy === 'overwrite' || strategy === 'merge') {
+        config.conflictStrategy = strategy;
+      } else {
+        console.error(chalk.red(`Invalid --conflict value: ${strategy}. Must be 'skip', 'overwrite', or 'merge'.`));
+        process.exit(1);
+      }
+      if (strategy === 'overwrite') {
+        config.force = true;
+      }
       config.interactive = false;
     } else if (arg === '--type') {
       const typeVal = args[++i];
@@ -106,6 +122,7 @@ function showHelp() {
   console.log('  task-deps            Audit task dependency graph');
   console.log('  diff <path>          Show dry-run diff summary');
   console.log('  dashboard            Interactive progress dashboard');
+  console.log('  timeline             View, query, export, or clear interaction timeline');
   console.log('  validate-all         Proactive validation & suggestion engine');
   console.log('  quickstart           5-minute quickstart wizard');
   console.log('  rewind <phase>       Rewind to target phase, archiving downstream artifacts');
@@ -127,6 +144,7 @@ function showHelp() {
   console.log('  --type <type>      Set project type: greenfield | brownfield');
   console.log('  --copilot          Include GitHub Copilot integration');
   console.log('  --force            Overwrite existing files without prompting');
+  console.log('  --conflict <mode>  Conflict handling: skip | overwrite | merge');
   console.log('  --dry-run          Show what would be installed without copying');
   console.log('  --help, -h         Display this help message\n');
   console.log(chalk.bold('VERIFY OPTIONS:'));
@@ -140,6 +158,7 @@ function showHelp() {
   console.log('  npx jumpstart-mode . --name "My Project" --approver "Jane Smith" --copilot');
   console.log('  npx jumpstart-mode ./existing-app --type brownfield --copilot');
   console.log('  npx jumpstart-mode --dry-run .');
+  console.log('  npx jumpstart-mode . --conflict merge');
   console.log('  npx jumpstart-mode verify');
   console.log('  npx jumpstart-mode verify --file specs/architecture.md --strict');
   console.log('  npx jumpstart-mode dashboard');
@@ -257,7 +276,13 @@ function copyDirectoryRecursive(src, dest, options = {}) {
 
 // Copy a single file
 function copyFile(src, dest, options = {}) {
-  const { dryRun = false, force = false, stats = { copied: [], skipped: [] } } = options;
+  const {
+    dryRun = false,
+    force = false,
+    conflictStrategy = 'skip',
+    stats = { copied: [], skipped: [], merged: [] },
+    mergeResolver = null,
+  } = options;
 
   if (!fs.existsSync(src)) {
     return stats;
@@ -265,7 +290,23 @@ function copyFile(src, dest, options = {}) {
 
   const exists = fs.existsSync(dest);
   if (exists && !force) {
-    stats.skipped.push(dest);
+    if (conflictStrategy === 'merge' && typeof mergeResolver === 'function') {
+      if (!dryRun) {
+        const srcContent = fs.readFileSync(src, 'utf8');
+        const destContent = fs.readFileSync(dest, 'utf8');
+        const mergedContent = mergeResolver(destContent, srcContent, path.basename(dest));
+        if (mergedContent !== destContent) {
+          fs.writeFileSync(dest, mergedContent, 'utf8');
+          stats.merged.push(dest);
+        } else {
+          stats.skipped.push(dest);
+        }
+      } else {
+        stats.merged.push(dest);
+      }
+    } else {
+      stats.skipped.push(dest);
+    }
   } else {
     if (!dryRun) {
       const destDir = path.dirname(dest);
@@ -278,6 +319,80 @@ function copyFile(src, dest, options = {}) {
   }
 
   return stats;
+}
+
+function buildMergedInstructionBlock(frameworkContent, fileName) {
+  const startMarker = `<!-- BEGIN JUMPSTART MERGE: ${fileName} -->`;
+  const endMarker = `<!-- END JUMPSTART MERGE: ${fileName} -->`;
+  const trimmed = frameworkContent.trim();
+
+  return {
+    startMarker,
+    endMarker,
+    block: [
+      '',
+      '---',
+      '',
+      '## Jump Start Framework Instructions (Merged)',
+      '',
+      '> This section is managed by `jumpstart-mode --conflict merge`.',
+      '> Keep your custom instructions above this block.',
+      '',
+      startMarker,
+      trimmed,
+      endMarker,
+      '',
+    ].join('\n'),
+  };
+}
+
+function mergeInstructionDocument(existingContent, frameworkContent, fileName) {
+  const { startMarker, endMarker, block } = buildMergedInstructionBlock(frameworkContent, fileName);
+  const escapedStart = startMarker.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const escapedEnd = endMarker.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const blockRegex = new RegExp(`${escapedStart}[\\s\\S]*?${escapedEnd}`, 'm');
+
+  if (blockRegex.test(existingContent)) {
+    return existingContent.replace(blockRegex, `${startMarker}\n${frameworkContent.trim()}\n${endMarker}`);
+  }
+
+  return `${existingContent.replace(/\s*$/, '')}${block}`;
+}
+
+function buildSkipWarningNote(skippedFiles) {
+  const timestamp = new Date().toISOString();
+  const bulletList = skippedFiles.map(file => `- ${file}`).join('\n');
+
+  return [
+    '# Jump Start Installation Warning',
+    '',
+    `Generated: ${timestamp}`,
+    '',
+    'The following integration files were skipped during bootstrap:',
+    bulletList,
+    '',
+    'Skipping these files can cause integration issues for AI assistants because required Jump Start instruction blocks may be missing.',
+    'Recommended fix: re-run bootstrap with merge mode:',
+    '',
+    '```bash',
+    'npx jumpstart-mode . --conflict merge',
+    '```',
+    '',
+  ].join('\n');
+}
+
+function persistSkipWarning(targetPath, skippedFiles, dryRun) {
+  if (dryRun || skippedFiles.length === 0) {
+    return;
+  }
+
+  const warningPath = path.join(targetPath, JUMPSTART_DIR, 'state', 'install-warnings.md');
+  const warningDir = path.dirname(warningPath);
+  if (!fs.existsSync(warningDir)) {
+    fs.mkdirSync(warningDir, { recursive: true });
+  }
+
+  fs.writeFileSync(warningPath, buildSkipWarningNote(skippedFiles), 'utf8');
 }
 
 // Create directory structure
@@ -299,66 +414,18 @@ function createDirectories(baseDir, dirs, options = {}) {
   return stats;
 }
 
-// Replace project name in config.yaml
-function replaceProjectName(configPath, projectName, options = {}) {
+function persistBootstrapAnswers(configPath, config, options = {}) {
   const { dryRun = false } = options;
 
-  if (!fs.existsSync(configPath) || !projectName || dryRun) {
-    return;
+  if (dryRun) {
+    return { changed: false, applied: [] };
   }
 
-  let content = fs.readFileSync(configPath, 'utf8');
-  
-  // Replace various possible placeholder formats
-  content = content.replace(/{{PROJECT_NAME}}/g, projectName);
-  content = content.replace(/\{\{project_name\}\}/g, projectName);
-  content = content.replace(/PROJECT_NAME_PLACEHOLDER/g, projectName);
-  
-  // Update the project.name field (YAML format under project: section)
-  // Matches:  name: ""  or  name: ''  or  name: 
-  content = content.replace(
-    /(project:\s*\n(?:.*\n)*?\s*)name:\s*["']?["']?/m,
-    `$1name: "${projectName}"`
-  );
-
-  fs.writeFileSync(configPath, content, 'utf8');
-}
-
-// Set project type in config.yaml
-function setProjectType(configPath, projectType, options = {}) {
-  const { dryRun = false } = options;
-
-  if (!fs.existsSync(configPath) || !projectType || dryRun) {
-    return;
-  }
-
-  let content = fs.readFileSync(configPath, 'utf8');
-
-  // Replace type: null or type: "" under the project: section
-  content = content.replace(
-    /(project:\s*\n(?:.*\n)*?\s*)type:\s*(?:null|""|'')?/m,
-    `$1type: "${projectType}"`
-  );
-
-  fs.writeFileSync(configPath, content, 'utf8');
-}
-// Set approver name in config.yaml
-function setApprover(configPath, approverName, options = {}) {
-  const { dryRun = false } = options;
-
-  if (!fs.existsSync(configPath) || !approverName || dryRun) {
-    return;
-  }
-
-  let content = fs.readFileSync(configPath, 'utf8');
-
-  // Replace approver: "" under the project: section
-  content = content.replace(
-    /(project:\s*\n(?:.*\n)*?\s*)approver:\s*""\s*#/m,
-    `$1approver: "${approverName}"                          #`
-  );
-
-  fs.writeFileSync(configPath, content, 'utf8');
+  return updateBootstrapAnswers(configPath, {
+    projectName: config.projectName,
+    projectType: config.projectType,
+    approverName: config.approverName,
+  });
 }
 // Detect conflicts
 function detectConflicts(targetDir, config) {
@@ -479,6 +546,7 @@ async function runInteractive() {
     projectType,
     copilot: answers.copilot,
     force: false,
+    conflictStrategy: 'skip',
     dryRun: false,
     interactive: true
   };
@@ -498,19 +566,40 @@ async function runInteractive() {
       console.log(chalk.cyan('   while preserving your config, state, specs, and custom agents.'));
     }
 
-    const { overwrite } = await prompts({
-      type: 'confirm',
-      name: 'overwrite',
-      message: 'Overwrite existing files?',
-      initial: false
+    const mergeableConflicts = conflicts.filter(c => MERGEABLE_INTEGRATION_FILES.includes(c));
+    const { strategy } = await prompts({
+      type: 'select',
+      name: 'strategy',
+      message: mergeableConflicts.length > 0
+        ? 'How should conflicts be handled?'
+        : 'How should existing files be handled?',
+      choices: [
+        {
+          title: 'Skip existing files',
+          description: 'Keep existing files untouched (may cause integration issues for AGENTS.md/CLAUDE.md)',
+          value: 'skip'
+        },
+        {
+          title: 'Overwrite existing files',
+          description: 'Replace conflicting files with Jump Start defaults',
+          value: 'overwrite'
+        },
+        {
+          title: 'Merge AGENTS.md and CLAUDE.md',
+          description: 'Append/refresh Jump Start instruction blocks while preserving custom content',
+          value: 'merge'
+        }
+      ],
+      initial: 0
     });
 
-    if (!overwrite) {
+    if (!strategy) {
       console.log(chalk.yellow('\n❌ Setup cancelled\n'));
       process.exit(0);
     }
 
-    config.force = true;
+    config.conflictStrategy = strategy;
+    config.force = strategy === 'overwrite';
   }
 
   return config;
@@ -555,12 +644,14 @@ async function install(config) {
   const stats = {
     copied: [],
     skipped: [],
+    merged: [],
     created: []
   };
 
   const copyOptions = {
     dryRun: config.dryRun,
     force: config.force,
+    conflictStrategy: config.conflictStrategy || (config.force ? 'overwrite' : 'skip'),
     stats
   };
 
@@ -575,7 +666,13 @@ async function install(config) {
   for (const file of INTEGRATION_FILES) {
     const src = path.join(PACKAGE_ROOT, file);
     const dest = path.join(targetPath, file);
-    copyFile(src, dest, copyOptions);
+    const fileOptions = {
+      ...copyOptions,
+      mergeResolver: MERGEABLE_INTEGRATION_FILES.includes(file)
+        ? mergeInstructionDocument
+        : null,
+    };
+    copyFile(src, dest, fileOptions);
   }
 
   // 3. Copy .github if copilot option
@@ -601,25 +698,16 @@ async function install(config) {
   const qaLogDest = path.join(targetPath, 'specs', 'qa-log.md');
   copyFile(qaLogSrc, qaLogDest, copyOptions);
 
-  // 5. Replace project name in config
-  if (config.projectName) {
-    console.log(chalk.cyan('✏️  Setting project name...'));
-    const configPath = path.join(targetPath, JUMPSTART_DIR, 'config.yaml');
-    replaceProjectName(configPath, config.projectName, { dryRun: config.dryRun });
-  }
+  // 5-6. Persist bootstrap answers in config.yaml
+  const configPath = path.join(targetPath, JUMPSTART_DIR, 'config.yaml');
+  const hasBootstrapAnswers = Boolean(config.projectName || config.projectType || config.approverName);
+  if (hasBootstrapAnswers) {
+    console.log(chalk.cyan('🧾 Persisting startup answers to config.yaml...'));
+    const persistResult = persistBootstrapAnswers(configPath, config, { dryRun: config.dryRun });
 
-  // 6. Set project type in config
-  if (config.projectType) {
-    console.log(chalk.cyan('🏷️  Setting project type...'));
-    const configPath = path.join(targetPath, JUMPSTART_DIR, 'config.yaml');
-    setProjectType(configPath, config.projectType, { dryRun: config.dryRun });
-  }
-
-  // 6b. Set approver name in config
-  if (config.approverName) {
-    console.log(chalk.cyan('✍️  Setting approver name...'));
-    const configPath = path.join(targetPath, JUMPSTART_DIR, 'config.yaml');
-    setApprover(configPath, config.approverName, { dryRun: config.dryRun });
+    if (persistResult.changed && persistResult.applied.length > 0) {
+      console.log(chalk.gray(`   Saved fields: ${persistResult.applied.join(', ')}`));
+    }
   }
 
   // 7. Context7 MCP setup (interactive only)
@@ -650,11 +738,25 @@ async function install(config) {
   if (stats.created.length > 0) {
     console.log(chalk.bold(`📁 Directories created: ${stats.created.length}`));
   }
+
+  if (stats.merged.length > 0) {
+    console.log(chalk.bold(`🔀 Files merged: ${stats.merged.length}`));
+  }
   
   if (stats.skipped.length > 0 && !config.force) {
     console.log(chalk.yellow(`⚠️  Files skipped (already exist): ${stats.skipped.length}`));
-    console.log(chalk.gray('   Use --force to overwrite existing files'));
+    console.log(chalk.gray('   Use --conflict overwrite to overwrite existing files'));
+    console.log(chalk.gray('   Use --conflict merge to merge AGENTS.md / CLAUDE.md'));
     console.log(chalk.gray('   Or use: npx jumpstart-mode upgrade (preserves user content)'));
+  }
+
+  const skipSensitiveFiles = stats.skipped
+    .filter(filePath => MERGEABLE_INTEGRATION_FILES.includes(path.basename(filePath)));
+  if (skipSensitiveFiles.length > 0 && (copyOptions.conflictStrategy === 'skip')) {
+    console.log(chalk.yellow('\n⚠️  Integration warning: AGENTS.md / CLAUDE.md were skipped.'));
+    console.log(chalk.yellow('   This may cause integration issues because required Jump Start instructions may be missing.'));
+    console.log(chalk.gray('   Recommended: npx jumpstart-mode . --conflict merge'));
+    persistSkipWarning(targetPath, skipSensitiveFiles.map(filePath => path.basename(filePath)), config.dryRun);
   }
 
   // 8. Stamp framework manifest and config baseline for future upgrades
@@ -1609,6 +1711,96 @@ async function main() {
       return;
     }
 
+    if (subcommand === 'timeline') {
+      // Interaction Timeline (Timeline Protocol)
+      const timeline = await import('./lib/timeline.js');
+      const io = require('./lib/io');
+      const argv = process.argv.slice(3);
+      const formatIdx = argv.indexOf('--format');
+      const format = formatIdx !== -1 ? argv[formatIdx + 1] : 'markdown';
+      const phaseIdx = argv.indexOf('--phase');
+      const phaseFilter = phaseIdx !== -1 ? argv[phaseIdx + 1] : null;
+      const agentIdx = argv.indexOf('--agent');
+      const agentFilter = agentIdx !== -1 ? argv[agentIdx + 1] : null;
+      const typeIdx = argv.indexOf('--type');
+      const typeFilter = typeIdx !== -1 ? argv[typeIdx + 1] : null;
+      const sessionIdx = argv.indexOf('--session');
+      const sessionFilter = sessionIdx !== -1 ? argv[sessionIdx + 1] : null;
+      const fromIdx = argv.indexOf('--from');
+      const fromFilter = fromIdx !== -1 ? argv[fromIdx + 1] : null;
+      const toIdx = argv.indexOf('--to');
+      const toFilter = toIdx !== -1 ? argv[toIdx + 1] : null;
+      const jsonMode = argv.includes('--json');
+      const doClear = argv.includes('--clear');
+      const eventsFile = path.join(process.cwd(), '.jumpstart', 'state', 'timeline.json');
+
+      if (doClear) {
+        const result = timeline.clearTimeline(eventsFile, { archive: true });
+        console.log(chalk.green('✓ Timeline cleared.'), result.archived_to ? `Archived to ${result.archived_to}` : '');
+        return;
+      }
+
+      // Build filters
+      const filters = {};
+      if (phaseFilter) filters.phase = phaseFilter;
+      if (agentFilter) filters.agent = agentFilter;
+      if (typeFilter) filters.event_type = typeFilter;
+      if (sessionFilter) filters.session_id = sessionFilter;
+      if (fromFilter) filters.from = fromFilter;
+      if (toFilter) filters.to = toFilter;
+
+      const hasFilters = Object.keys(filters).length > 0;
+
+      if (hasFilters) {
+        // Query mode
+        const events = timeline.queryTimeline(eventsFile, filters);
+        if (jsonMode) {
+          io.writeResult(events);
+        } else {
+          console.log(timeline.renderMarkdown(events));
+        }
+        return;
+      }
+
+      // Summary or report mode
+      const action = argv[0] || 'summary';
+      if (action === 'summary' || (!['report', 'export'].includes(action) && !hasFilters)) {
+        const summary = timeline.getTimelineSummary(eventsFile);
+        if (jsonMode) {
+          io.writeResult(summary);
+        } else {
+          console.log(chalk.bold.blue('\n📊 Timeline Summary\n'));
+          console.log(`  Session: ${summary.session_id || 'N/A'}`);
+          console.log(`  Events:  ${summary.total_events}`);
+          if (summary.started_at) console.log(`  Started: ${summary.started_at}`);
+          if (summary.duration_s) console.log(`  Duration: ${Math.round(summary.duration_s)}s`);
+          if (summary.by_type && Object.keys(summary.by_type).length > 0) {
+            console.log(chalk.bold('\n  Events by Type:'));
+            for (const [t, c] of Object.entries(summary.by_type)) {
+              console.log(`    ${t}: ${c}`);
+            }
+          }
+          if (summary.by_phase && Object.keys(summary.by_phase).length > 0) {
+            console.log(chalk.bold('\n  Events by Phase:'));
+            for (const [p, c] of Object.entries(summary.by_phase)) {
+              console.log(`    ${p}: ${c}`);
+            }
+          }
+          console.log();
+        }
+        return;
+      }
+
+      // Report / export
+      const result = timeline.generateTimelineReport(eventsFile, { format });
+      if (jsonMode && format !== 'json') {
+        io.writeResult({ format, content: result });
+      } else {
+        console.log(result);
+      }
+      return;
+    }
+
     if (subcommand === 'validate-all') {
       // Proactive Validation & Suggestion Engine (UX Feature 7)
       const { validateArtifactProactive, validateAllArtifacts, renderValidationReport } = require('./lib/proactive-validator');
@@ -1770,7 +1962,7 @@ async function main() {
 
     if (subcommand === 'approve') {
       // Programmatic Artifact Approval (UX Feature 4)
-      const { detectCurrentArtifact, approveArtifact, renderApprovalResult } = await import('./lib/approve.js');
+      const { detectCurrentArtifact, approveArtifact, renderApprovalResult } = require('./lib/approve.js');
       const artifactPath = process.argv[3] && !process.argv[3].startsWith('--') ? process.argv[3] : null;
       const approverIdx = process.argv.indexOf('--approver');
       const approver = approverIdx !== -1 ? process.argv[approverIdx + 1] : undefined;
@@ -1798,7 +1990,7 @@ async function main() {
 
     if (subcommand === 'reject') {
       // Programmatic Artifact Rejection (UX Feature 4)
-      const { detectCurrentArtifact, rejectArtifact, renderRejectionResult } = await import('./lib/approve.js');
+      const { detectCurrentArtifact, rejectArtifact, renderRejectionResult } = require('./lib/approve.js');
       const artifactPath = process.argv[3] && !process.argv[3].startsWith('--') ? process.argv[3] : null;
       const reasonIdx = process.argv.indexOf('--reason');
       const reason = reasonIdx !== -1 ? process.argv[reasonIdx + 1] : 'No reason specified';

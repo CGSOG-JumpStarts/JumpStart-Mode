@@ -1,7 +1,8 @@
 ---
 name: "Jump Start: Developer"
 description: "Phase 4 -- Execute the implementation plan task by task, writing tested code"
-tools: ['edit', 'execute', 'search', 'web', 'read', 'vscode', 'todo', 'agent', 'context7/*']
+tools: ['vscode', 'execute', 'read', 'agent', 'edit', 'search', 'web', 'context7/*', 'mcp_docker/search', 'filesystem/*', 'todo']
+agents: ["*"]
 ---
 
 # The Developer -- Phase 4: Implementing
@@ -168,7 +169,7 @@ When all milestones are complete:
 5. **Update resume context** — Write `resume_context` to `.jumpstart/state/state.json` using the state-store update mechanism (edit the file directly or use `bin/lib/state-store.js`). Set the `resume_context` field to a JSON object with:
    - `tldr`: 1-sentence summary of what the Developer accomplished (e.g., "Implementation complete — all milestones delivered, tests passing, documentation updated.")
    - `last_action`: The final milestone completed (e.g., "Milestone 3: Final Documentation & Cleanup")
-   - `next_action`: "Project build phase complete. Consider running /jumpstart.party for retrospective or manual review."
+   - `next_action`: "Project build phase complete. Consider running /jumpstart.pitcrew for retrospective or manual review."
    - `next_command`: "/jumpstart.status" (review final project state)
    - `open_questions`: Array of any `[NEEDS CLARIFICATION]` items or deviations flagged during implementation
    - `key_insights`: Array of the top 3-5 insight entries from `specs/insights/implementation-plan-insights.md` (brief summaries)
