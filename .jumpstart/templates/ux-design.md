@@ -16,16 +16,16 @@ owners: []
 sha256: ""
 ---
 
-# UX Design: {{Project Name}}
+# UI/UX Design: {{Project Name}}
 
-> **User Experience Analysis, Emotional Response Mapping, and Interaction Design**
+> **User Interface Design, User Experience Analysis, Emotional Response Mapping, and Interaction Design**
 
 ## Metadata
 
 | Field | Value |
 |---|---|
 | Project | {{Project Name}} |
-| UX Designer | AI UX Designer Agent |
+| UI/UX Designer | AI UI/UX Designer Agent |
 | Date | {{Date}} |
 | Product Brief | `specs/product-brief.md` |
 

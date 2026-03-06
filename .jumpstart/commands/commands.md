@@ -761,12 +761,12 @@ jumpstart coverage <prd-path> <plan-path>
 ## /jumpstart.ux-design
 
 **Phase:** Advisory (after Phase 1)
-**Agent:** The UX Designer
+**Agent:** The UI/UX Designer
 **Agent File:** `.jumpstart/agents/ux-designer.md`
 **Template:** `.jumpstart/templates/ux-design.md`
 **Output:** `specs/ux-design.md`, `specs/insights/ux-design-insights.md`
 
-**Description:** Activate the UX Designer agent for emotional response mapping, information architecture, interaction pattern guidelines, and accessibility review.
+**Description:** Activate the UI/UX Designer agent for visual design direction, emotional response mapping, information architecture, interaction pattern guidelines, and accessibility review.
 
 **Usage:**
 ```
@@ -777,12 +777,13 @@ jumpstart coverage <prd-path> <plan-path>
 - `specs/product-brief.md` must exist and be approved.
 
 **Behavior:**
-1. Load the UX Designer persona from `.jumpstart/agents/ux-designer.md`.
+1. Load the UI/UX Designer persona from `.jumpstart/agents/ux-designer.md`.
 2. Map emotional response curves for each persona.
 3. Define information architecture and navigation.
 4. Specify interaction patterns and component guidelines.
-5. Conduct accessibility review (WCAG 2.1 AA).
-6. Compile UX Design document for human review.
+5. Provide visual design direction (typography, colour, spacing, design tokens).
+6. Conduct accessibility review (WCAG 2.1 AA).
+7. Compile UI/UX Design document for human review.
 
 ---
 

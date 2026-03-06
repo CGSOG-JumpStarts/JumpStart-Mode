@@ -11,6 +11,7 @@
 | `skill-creator` | Guide for creating effective skills | Built-in |
 | `linkedin` | LinkedIn profile optimization and professional networking | Example |
 | `requirements` | Requirements elicitation and analysis techniques | Example |
+| `ui-ux-pro-max` | AI-powered design intelligence for professional UI/UX across multiple platforms and frameworks | Installed |
 
 ---
 

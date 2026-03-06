@@ -115,7 +115,7 @@ These agents provide specialized expertise invocable at any phase. They are advi
 | 3 | **Performance Analyst** | `/jumpstart.performance` | NFR quantification (p50/p95/p99), load profiles, bottleneck analysis, cost budgets | `specs/nfrs.md` | Human after Phase 2-3; subagent by PM or Architect |
 | 4 | **Domain Researcher** | `/jumpstart.research` | Context7-verified technology evaluation, version pinning, library health | `specs/research/{topic}.md` | Human during Phase 1-3; subagent by Architect or Analyst |
 | 5 | **Requirements Extractor** | *(subagent only — no command)* | Cross-references upstream data against requirements checklist; curates prioritized question batches | Returns structured report to caller | **Analyst** (full), **PM** (targeted), **Architect** (targeted) |
-| 6 | **UX Designer** | `/jumpstart.ux-design` | Emotional mapping, information architecture, accessibility (WCAG 2.1 AA), interaction patterns | `specs/ux-design.md` | Human after Phase 1; subagent by Analyst or PM |
+| 6 | **UI/UX Designer** | `/jumpstart.ux-design` | UI/UX design intelligence, visual design direction, emotional mapping, information architecture, typography, colour systems, design tokens, accessibility (WCAG 2.1 AA), interaction patterns | `specs/ux-design.md` | Human after Phase 1; subagent by Analyst or PM |
 | 7 | **Refactoring Agent** | `/jumpstart.refactor` | Complexity analysis (cyclomatic >10), code smell detection, structural improvements | `specs/refactor-report.md` | Human after Phase 4; subagent by Developer or Retrospective |
 | 8 | **Technical Writer** | `/jumpstart.docs` | Documentation freshness audit, README generation, per-directory AGENTS.md | Updated README.md, `specs/doc-update-checklist.md`, AGENTS.md files | Human during/after Phase 4; subagent by Developer |
 | 9 | **Scrum Master** | `/jumpstart.sprint` | Sprint planning, dependency mapping (Mermaid gantt), blocker detection, task readiness | `specs/sprint-status.yaml` | Human after Phase 3; subagent by Developer |
@@ -198,7 +198,7 @@ JumpStart enforces a **5-layer automated quality gate** (Roadmap Article VIII):
 | `/jumpstart.security` | Security | Any |
 | `/jumpstart.performance` | Performance | Any |
 | `/jumpstart.research` | Researcher | Any |
-| `/jumpstart.ux-design` | UX Designer | Any |
+| `/jumpstart.ux-design` | UI/UX Designer | Any |
 | `/jumpstart.refactor` | Refactoring | Any |
 | `/jumpstart.docs` | Tech Writer | Any |
 | `/jumpstart.sprint` | Scrum Master | Any |

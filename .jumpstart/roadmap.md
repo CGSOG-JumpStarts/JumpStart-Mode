@@ -194,7 +194,7 @@ The framework provides **specialized advisory agents** that extend the core phas
 5. **Evidence over opinion.** Specialized agents must ground their findings in verifiable evidence — OWASP standards, measured complexity metrics, verified documentation, test results — not subjective assessments.
 
 **Available Specialized Agents:**
-- **UX Designer** (`/jumpstart.ux-design`): Emotional response mapping, information architecture, accessibility review
+- **UI/UX Designer** (`/jumpstart.ux-design`): Emotional response mapping, information architecture, accessibility review
 - **QA Agent** (`/jumpstart.qa`): Test strategy, requirement traceability, release readiness assessment
 - **Scrum Master** (`/jumpstart.sprint`): Sprint planning, dependency mapping, blocker detection
 - **Security Architect** (`/jumpstart.security`): STRIDE threat modelling, OWASP Top 10 audit, invariant compliance

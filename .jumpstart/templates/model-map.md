@@ -43,7 +43,7 @@ This document defines which AI model is assigned to each phase and advisory agen
 
 | Agent | Model Provider | Model ID | Rationale |
 |---|---|---|---|
-| UX Designer | {{provider}} | {{model}} | {{Rationale}} |
+| UI/UX Designer | {{provider}} | {{model}} | {{Rationale}} |
 | QA | {{provider}} | {{model}} | {{Rationale}} |
 | Security | {{provider}} | {{model}} | {{Rationale}} |
 | Performance | {{provider}} | {{model}} | {{Rationale}} |

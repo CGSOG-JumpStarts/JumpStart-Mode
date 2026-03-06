@@ -38,7 +38,7 @@ Below is a detailed mapping of each agent in the Jump Start framework, the templ
 | :--- | :--- | :--- |
 | **Scout** (Pre-Phase) | `insights.md`, `codebase-context.md`, `insight-entry.md`, `session-briefing.md` | `Jump Start: Researcher`, `Jump Start: Security` |
 | **Challenger** (Phase 0) | `needs-clarification.md`, `insights.md`, `challenger-log.md`, `challenger-brief.md`, `reasoning.md`, `insight-entry.md`, `wait-checkpoint.md`, `session-briefing.md` | `Jump Start: Researcher`, `Jump Start: Security`, `Jump Start: Adversary` |
-| **Analyst** (Phase 1) | `needs-clarification.md`, `insights.md`, `persona-simulation.md`, `product-brief.md`, `requirements-responses.md`, `insight-entry.md`, `wait-checkpoint.md`, `persona-change.md`, `session-briefing.md`, `compliance-checklist.md`¹, `metrics.md`¹, `stakeholders.md`¹ | `Jump Start: Requirements Extractor`, `Jump Start: UX Designer`, `Jump Start: Researcher`, `Jump Start: Security`, `Jump Start: Adversary` |
+| **Analyst** (Phase 1) | `needs-clarification.md`, `insights.md`, `persona-simulation.md`, `product-brief.md`, `requirements-responses.md`, `insight-entry.md`, `wait-checkpoint.md`, `persona-change.md`, `session-briefing.md`, `compliance-checklist.md`¹, `metrics.md`¹, `stakeholders.md`¹ | `Jump Start: Requirements Extractor`, `Jump Start: UI/UX Designer`, `Jump Start: Researcher`, `Jump Start: Security`, `Jump Start: Adversary` |
 | **PM** (Phase 2) | `needs-clarification.md`, `insights.md`, `gherkin-guide.md`, `prd.md`, `insight-entry.md`, `wait-checkpoint.md`, `session-briefing.md`, `prd-index.md`¹ | `Jump Start: QA`, `Jump Start: Performance`, `Jump Start: Security`, `Jump Start: Scrum Master`, `Jump Start: Adversary` |
 | **Architect** (Phase 3) | `needs-clarification.md`, `insights.md`, `adr.md`, `agents-md.md`, `branch-evaluation.md`, `documentation-audit.md`, `design-system.md`, `data-model.md`, `contracts.md`, `insight-entry.md`, `wait-checkpoint.md`, `session-briefing.md`, `architecture.md`, `implementation-plan.md`, `constraint-map.md`¹, `task-dependencies.md`¹, `tasks.md`¹, `traceability.md`¹ | `Jump Start: Security`, `Jump Start: Performance`, `Jump Start: Researcher`, `Jump Start: DevOps`, `Jump Start: Adversary`, `Jump Start: Scrum Master` |
 | **Developer** (Phase 4) | `needs-clarification.md`, `insights.md`, `todo.md`, `agents-md.md`, `red-phase-report.md`, `test-failure-evidence.md`, `insight-entry.md`, `wait-checkpoint.md`, `session-briefing.md` | `Jump Start: QA`, `Jump Start: Refactor`, `Jump Start: Reviewer`, `Jump Start: Tech Writer`, `Jump Start: Maintenance`, `Jump Start: Retrospective` |
@@ -50,7 +50,7 @@ Below is a detailed mapping of each agent in the Jump Start framework, the templ
 | **Adversary** | `adversarial-review.md` | *None* |
 | **DevOps** | `deploy.md`, `ci-cd.yml`¹ | `Jump Start: Security`, `Jump Start: Researcher` |
 | **Diagram Verifier** | *None — uses CLI tooling, not templates* | *None* |
-| **Facilitator** | `pitcrew-session.md`¹ | `Jump Start: QA`, `Jump Start: Security`, `Jump Start: Performance`, `Jump Start: Researcher`, `Jump Start: UX Designer`, `Jump Start: Refactor`, `Jump Start: Tech Writer`, `Jump Start: Scrum Master`, `Jump Start: DevOps`, `Jump Start: Adversary`, `Jump Start: Reviewer`, `Jump Start: Retrospective`, `Jump Start: Maintenance`, `Jump Start: Quick Dev` |
+| **Facilitator** | `pitcrew-session.md`¹ | `Jump Start: QA`, `Jump Start: Security`, `Jump Start: Performance`, `Jump Start: Researcher`, `Jump Start: UI/UX Designer`, `Jump Start: Refactor`, `Jump Start: Tech Writer`, `Jump Start: Scrum Master`, `Jump Start: DevOps`, `Jump Start: Adversary`, `Jump Start: Reviewer`, `Jump Start: Retrospective`, `Jump Start: Maintenance`, `Jump Start: Quick Dev` |
 | **Maintenance** | `drift-report.md`¹ | *None* |
 | **Performance** | `nfrs.md`¹ | `Jump Start: Researcher` |
 | **QA** | `test-plan.md`¹, `test-report.md`¹ | `Jump Start: Security`, `Jump Start: Performance` |
@@ -63,7 +63,7 @@ Below is a detailed mapping of each agent in the Jump Start framework, the templ
 | **Scrum Master** | `sprint-status.yaml`¹, `sprint-planning.md`¹, `sprint.yaml`¹ | *None* |
 | **Security** | `security-review.md`¹ | `Jump Start: Researcher` |
 | **Tech Writer** | `agents-md.md`, `doc-update-checklist.md`¹ | *None* |
-| **UX Designer** | `design-system.md`, `ux-design.md` | *None explicitly mentioned* |
+| **UI/UX Designer** | `design-system.md`, `ux-design.md` | *None explicitly mentioned* |
 
 ---
 

@@ -691,7 +691,7 @@ If `design_system.enabled` is `true` in `.jumpstart/config.yaml`:
 1. Read the design system from the configured path (default: `.jumpstart/templates/design-system.md`).
 2. Verify that component selections in the architecture reference the design system's component library.
 3. Ensure design tokens (colors, typography, spacing) are documented for frontend components.
-4. If the architecture introduces UI components not in the design system, flag them for UX Designer review.
+4. If the architecture introduces UI components not in the design system, flag them for UI/UX Designer review.
 
 ### CI/CD Deployment Gate (Item 98)
 

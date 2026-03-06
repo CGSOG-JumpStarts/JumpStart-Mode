@@ -719,7 +719,7 @@ These specialists provide on-demand expertise at any phase:
 | **Security** | STRIDE threat modeling, OWASP Top 10 | After Phase 3 to audit architecture |
 | **Performance** | NFR quantification, bottleneck analysis | After Phase 2 to set SLAs and budgets |
 | **QA** | Test strategy, coverage analysis | During Phase 4 for release readiness |
-| **UX Designer** | Emotional mapping, accessibility | After Phase 1 to validate journeys |
+| **UI/UX Designer** | UI/UX design intelligence, emotional mapping, accessibility | After Phase 1 to validate journeys |
 | **DevOps** | CI/CD pipelines, deployment strategy | After Phase 3 for production planning |
 | **Researcher** | Context7-verified tech evaluation | During Phase 3 for technology decisions |
 | **Scrum Master** | Sprint planning, dependency mapping | Before Phase 4 for task ordering |
@@ -825,7 +825,7 @@ Architect (Phase 3) working on healthcare app
 
 | Phase Agent | Commonly Invokes | Trigger Signals |
 |-------------|------------------|-----------------|
-| Analyst | UX Designer, Researcher | Complex user journeys, new tech evaluation |
+| Analyst | UI/UX Designer, Researcher | Complex user journeys, new tech evaluation |
 | PM | QA, Performance, Security | Testability concerns, NFRs, sensitive data |
 | Architect | Security, Performance, Researcher | Authentication, scale, library selection |
 | Developer | Refactor, Tech Writer, QA | Complexity spikes, doc drift, test gaps |

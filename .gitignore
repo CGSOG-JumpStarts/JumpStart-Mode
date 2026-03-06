@@ -26,7 +26,7 @@ build/
 /TODO.md
 
 # Documentation site
-/docs_site/
+#/docs_site/
 
 # Context7 MCP config (contains API key)
 .vscode/mcp.json

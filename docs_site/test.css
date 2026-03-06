@@ -1,0 +1,1 @@
+@import "tailwindcss/theme"; @custom-variant dark (&:is([data-theme="dark"] *)); @import "tailwindcss/utilities";

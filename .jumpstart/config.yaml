@@ -228,7 +228,7 @@ agents:
   ux-designer:
     persona_file: "agents/ux-designer.md"
     capture_insights: true
-    # Emotional response mapping for each persona across key journey steps
+    # UI/UX design direction, emotional response mapping for each persona across key journey steps
     # Outputs: specs/ux-design.md
 
   qa:

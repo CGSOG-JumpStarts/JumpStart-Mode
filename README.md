@@ -260,7 +260,7 @@ npx jumpstart-mode upgrade --restore --dry-run
 |---------|-------|---------|
 | `/jumpstart.adversary` | Adversary | Stress-test spec artifacts for gaps and violations |
 | `/jumpstart.reviewer` | Peer Reviewer | Score artifacts across quality dimensions |
-| `/jumpstart.ux-design` | UX Designer | Emotional response mapping and design consistency |
+| `/jumpstart.ux-design` | UI/UX Designer | Visual design direction, emotional response mapping, typography, colour systems, and design consistency |
 | `/jumpstart.security` | Security Architect | OWASP audit and trust boundary analysis |
 | `/jumpstart.qa` | QA Engineer | Test strategy and release readiness |
 | `/jumpstart.performance` | Performance Engineer | Performance budgets and scale analysis |
@@ -294,7 +294,7 @@ Beyond the six core phase agents, Jump Start includes **16 advisory agents** tha
 | Adversary | `/jumpstart.adversary` | Stress-tests specs for violations, gaps, and ambiguities |
 | Peer Reviewer | `/jumpstart.reviewer` | Scores artifacts across completeness, consistency, clarity, feasibility |
 | Facilitator | `/jumpstart.pitcrew` | Orchestrates multi-agent roundtable discussions |
-| UX Designer | `/jumpstart.ux-design` | Emotional response mapping, information architecture, accessibility |
+| UI/UX Designer | `/jumpstart.ux-design` | Visual design direction, emotional response mapping, information architecture, typography, colour systems, design tokens, accessibility |
 | Security Architect | `/jumpstart.security` | OWASP audits, trust boundaries, encryption review |
 | DevOps Engineer | `/jumpstart.deploy` | CI/CD pipelines, deployment plans, environment management |
 | QA Engineer | `/jumpstart.qa` | Test coverage, test strategy, release readiness assessment |
