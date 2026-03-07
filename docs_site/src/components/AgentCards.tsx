@@ -122,7 +122,7 @@ const AGENT_DATA: Agent[] = [
     category: "Advisory Agents",
     phase: "Utility",
     description: "Manages workflow, process, and multi-agent team orchestration.",
-    templates: ["party-session.md"],
+    templates: ["pitcrew-session.md"],
     subagents: ["QA", "Security", "Performance", "Researcher", "UX Designer", "Refactor", "Tech Writer", "Scrum Master", "DevOps", "Adversary", "Reviewer", "Retrospective", "Maintenance", "Quick Dev"]
   },
   {

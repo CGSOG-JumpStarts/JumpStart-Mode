@@ -280,6 +280,115 @@ const ALL_TOOLS = [
         required: ['event_type', 'action']
       }
     }
+  },
+  // ─── Quality Gate Tools ────────────────────────────────────────────────────
+  {
+    type: 'function',
+    function: {
+      name: 'run_secret_scan',
+      description: 'Scan files for accidentally committed secrets (API keys, tokens, passwords, private keys). Returns structured findings with severity levels.',
+      parameters: {
+        type: 'object',
+        properties: {
+          files: {
+            type: 'array',
+            items: { type: 'string' },
+            description: 'Array of file paths to scan.'
+          },
+          root: { type: 'string', description: 'Project root directory.' },
+          config: {
+            type: 'object',
+            description: 'Optional configuration.',
+            properties: {
+              custom_patterns: {
+                type: 'array',
+                description: 'Additional secret patterns to check.',
+                items: {
+                  type: 'object',
+                  properties: {
+                    name: { type: 'string' },
+                    pattern: { type: 'string' },
+                    severity: { type: 'string', enum: ['critical', 'high'] }
+                  },
+                  required: ['name', 'pattern']
+                }
+              },
+              allowlist: {
+                type: 'array',
+                items: { type: 'string' },
+                description: 'File paths to skip during scanning.'
+              }
+            }
+          }
+        },
+        required: ['files']
+      }
+    }
+  },
+  {
+    type: 'function',
+    function: {
+      name: 'run_type_check',
+      description: 'Run automated type checking (TypeScript tsc, Python mypy/pyright). Auto-detects the type checker from project configuration.',
+      parameters: {
+        type: 'object',
+        properties: {
+          files: {
+            type: 'array',
+            items: { type: 'string' },
+            description: 'Specific files to filter results for (optional — type checker runs project-wide).'
+          },
+          root: { type: 'string', description: 'Project root directory.' },
+          config: {
+            type: 'object',
+            description: 'Optional configuration.',
+            properties: {
+              type_command: { type: 'string', description: 'Override the auto-detected type check command.' },
+              strict: { type: 'boolean', description: 'Enable strict mode (TypeScript).' }
+            }
+          }
+        }
+      }
+    }
+  },
+  {
+    type: 'function',
+    function: {
+      name: 'run_smoke_test',
+      description: 'Perform a smoke test: build the project and optionally check if the application starts and responds to HTTP requests.',
+      parameters: {
+        type: 'object',
+        properties: {
+          root: { type: 'string', description: 'Project root directory.' },
+          config: {
+            type: 'object',
+            description: 'Optional configuration.',
+            properties: {
+              build_command: { type: 'string', description: 'Override the auto-detected build command.' },
+              start_command: { type: 'string', description: 'Override the auto-detected start command.' },
+              health_url: { type: 'string', description: 'URL to check for health (default: http://localhost:3000/health).' },
+              health_timeout: { type: 'number', description: 'Timeout in ms for health check (default: 10000).' },
+              skip_health_check: { type: 'boolean', description: 'Skip the health check and only verify the build.' }
+            }
+          }
+        }
+      }
+    }
+  },
+  {
+    type: 'function',
+    function: {
+      name: 'run_uat_coverage',
+      description: 'Check UAT alignment: verify that PRD acceptance criteria (Gherkin or bullet-point) are covered by actual test files. Returns coverage percentages and detailed mapping.',
+      parameters: {
+        type: 'object',
+        properties: {
+          prd_path: { type: 'string', description: 'Path to the PRD markdown file.' },
+          test_dir: { type: 'string', description: 'Path to the test directory.' }
+        },
+        required: ['prd_path', 'test_dir']
+      }
+    }
   }
 ];
 
@@ -299,7 +408,7 @@ const PHASE_TOOL_ADDITIONS = {
   analyst:    [],
   pm:         [],
   architect:  ['marketplace_install'],
-  developer:  ['run_in_terminal', 'marketplace_install']
+  developer:  ['run_in_terminal', 'marketplace_install', 'run_secret_scan', 'run_type_check', 'run_smoke_test', 'run_uat_coverage']
 };
 
 /**

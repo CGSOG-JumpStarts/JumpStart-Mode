@@ -253,6 +253,58 @@ function createToolBridge(options = {}) {
         duration_ms: args.duration_ms || null
       });
       return { success: !!evt, event_id: evt ? evt.id : null };
+    },
+
+    // ── Quality Gate Tool Handlers ──────────────────────────────────────────
+
+    async run_secret_scan(args) {
+      try {
+        const { runSecretScan } = require('./secret-scanner.js');
+        return runSecretScan({
+          files: args.files || [],
+          root: args.root || workspaceDir,
+          config: args.config || {}
+        });
+      } catch (err) {
+        return { error: err.message, pass: false };
+      }
+    },
+
+    async run_type_check(args) {
+      try {
+        const { runTypeCheck } = require('./type-checker.js');
+        return runTypeCheck({
+          files: args.files || [],
+          root: args.root || workspaceDir,
+          config: args.config || {}
+        });
+      } catch (err) {
+        return { error: err.message, pass: false };
+      }
+    },
+
+    async run_smoke_test(args) {
+      try {
+        const { runSmokeTest } = require('./smoke-tester.js');
+        return await runSmokeTest({
+          root: args.root || workspaceDir,
+          config: args.config || {}
+        });
+      } catch (err) {
+        return { error: err.message, pass: false };
+      }
+    },
+
+    async run_uat_coverage(args) {
+      try {
+        const { computeUATCoverage } = require('./uat-coverage.js');
+        return computeUATCoverage(
+          args.prd_path,
+          args.test_dir
+        );
+      } catch (err) {
+        return { error: err.message, pass: false };
+      }
     }
   };
 
